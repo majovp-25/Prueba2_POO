@@ -14,76 +14,54 @@ import javax.swing.*;
  */
 public class Main {
 
-    /**
-     * Método principal que inicia la aplicación
+/**
+     * Método principal MODIFICADO PARA PRUEBAS
      */
     public static void main(String[] args) {
-        // Configurar Look and Feel del sistema operativo (Para que se vea nativo como Windows)
+        // 1. Configurar Look and Feel
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
             System.err.println("No se pudo establecer el Look and Feel: " + e.getMessage());
         }
 
-        // Instanciamos la configuración (Singleton)
+        // 2. Instanciamos la configuración
         DatabaseConfig dbConfig = DatabaseConfig.getInstance();
 
-        SwingUtilities.invokeLater(() -> {
-            // Mostrar splash screen o mensaje de inicio actualizado
-            mostrarPantallaInicio();
+        // ==========================================
+        // 🧪 ZONA DE PRUEBAS DEL LOGIN (CORREGIDA)
+        // ==========================================
+        System.out.println("\n🛠️ --- INICIANDO PRUEBA DE BACKEND (RAILWAY) ---");
 
-            // Verificar conexión a BD (Ahora verifica contra Railway/Postgres)
-            if (!dbConfig.verificarConexion()) {
-                mostrarErrorConexion();
-                return; // Detenemos la ejecución si no hay red o base de datos
-            }
+        // CORRECCIÓN AQUÍ: Quitamos el ".model" de la ruta del DAO
+        ec.edu.sistemalicencias.dao.UsuarioDAO dao = new ec.edu.sistemalicencias.dao.UsuarioDAO();
 
-            // Si todo sale bien, iniciamos la ventana principal
-            MainView mainView = new MainView();
-            mainView.setVisible(true);
-        });
-    }
+        // TEST 1: Probamos con el ADMIN
+        System.out.println("👉 Intentando login con 'admin'...");
+        
+        // El Usuario sí está en model, así que este se queda igual
+        ec.edu.sistemalicencias.model.Usuario u1 = dao.login("admin", "1234"); 
 
-    /**
-     * Muestra una pantalla de inicio con información del sistema
-     */
-    private static void mostrarPantallaInicio() {
-        JOptionPane.showMessageDialog(
-                null,
-                "SISTEMA DE LICENCIAS DE CONDUCIR - ECUADOR\n\n" +
-                        "Agencia Nacional de Tránsito\n" +
-                        "Versión 1.0 (Cloud Edition)\n\n" +
-                        "Desarrollado con:\n" +
-                        "- Java 21\n" +
-                        "- PostgreSQL (Railway Cloud)\n" + // <--- CAMBIO AQUÍ
-                        "- Arquitectura MVC\n" +
-                        "- iText PDF\n\n" +
-                        "Conectando con la nube e iniciando sistema...",
-                "Bienvenido",
-                JOptionPane.INFORMATION_MESSAGE
-        );
-    }
+        if (u1 != null) {
+            System.out.println("✅ ¡ÉXITO! Usuario encontrado: " + u1.getUsername());
+            System.out.println("🔹 Rol detectado: " + u1.getRol());
+        } else {
+            System.out.println("❌ ERROR: No se pudo conectar o usuario incorrecto.");
+        }
 
-    /**
-     * Muestra un mensaje de error si no se puede conectar a la base de datos
-     */
-    private static void mostrarErrorConexion() {
-        String mensaje = "ERROR DE CONEXIÓN A BASE DE DATOS\n\n" +
-                "No se pudo establecer conexión con el servidor en la nube (Railway).\n\n" +
-                "Verifique que:\n" +
-                "1. Tenga conexión a Internet activa\n" + // <--- CAMBIO IMPORTANTE
-                "2. El servicio de Railway esté operativo\n" +
-                "3. El firewall no esté bloqueando el puerto 48638\n\n" +
-                "Si el problema persiste, contacte al administrador.\n\n" +
-                "La aplicación se cerrará.";
+        // TEST 2: Probamos con datos FALSOS
+        System.out.println("\n👉 Intentando login con 'hacker'...");
+        ec.edu.sistemalicencias.model.Usuario u2 = dao.login("hacker", "nadie");
 
-        JOptionPane.showMessageDialog(
-                null,
-                mensaje,
-                "Error de Conexión",
-                JOptionPane.ERROR_MESSAGE
-        );
+        if (u2 == null) {
+            System.out.println("✅ ¡CORRECTO! El sistema rechazó al intruso.");
+        } else {
+            System.out.println("⚠️ ALERTA: El sistema dejó pasar a un usuario falso.");
+        }
+        System.out.println("----------------------------------------------\n");
 
-        System.exit(1);
+        // ==========================================
+        // FIN DE PRUEBAS
+        // ==========================================
     }
 }
