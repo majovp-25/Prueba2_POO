@@ -1,17 +1,12 @@
--- 1. Borrar la tabla si existe (para evitar errores al reintentar)
-DROP TABLE IF EXISTS usuarios;
+-- 1. Actualizamos al admin para asegurarnos que el rol esté bien escrito
+UPDATE usuarios 
+SET rol = 'Administrador' 
+WHERE username = 'admin';
 
--- 2. Crear la tabla REAL de usuarios
-CREATE TABLE usuarios (
-    id SERIAL PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    password VARCHAR(50) NOT NULL,
-    rol VARCHAR(20) NOT NULL CHECK (rol IN ('Administrador', 'Analista'))
-);
+-- 2. Insertamos un usuario nuevo con el rol de 'Analista'
+-- (Si ya existe, puedes cambiarle el nombre a 'analista_juan' o similar)
+INSERT INTO usuarios (username, password, rol) 
+VALUES ('analista1', '1234', 'Analista');
 
--- 3. Insertar el usuario Admin (el que Java está buscando)
-INSERT INTO usuarios (username, password, rol) VALUES 
-('admin', '1234', 'Administrador');
-
--- 4. Confirmar que se creó
+-- 3. Verificamos cómo quedó la tabla
 SELECT * FROM usuarios;

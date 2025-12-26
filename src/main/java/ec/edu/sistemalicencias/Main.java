@@ -61,14 +61,16 @@ public class Main {
         // ==========================================
         System.out.println("\n📄 --- INICIANDO PRUEBA DE GENERACIÓN PDF ---");
         
-        // 1. Creamos una lista simulada de usuarios (porque aún no tenemos un método que traiga todos)
+        // 1. Creamos la lista simulada AJUSTADA A LOS REQUERIMIENTOS
         List<Usuario> listaParaReporte = new ArrayList<>();
-        
-        // Agregamos usuarios a mano a la lista
-        listaParaReporte.add(new Usuario(1, "admin", "1234", "Administrador"));
-        listaParaReporte.add(new Usuario(2, "supervisor_quito", "1234", "Supervisor"));
-        listaParaReporte.add(new Usuario(3, "cajero_guayaquil", "1234", "Cajero"));
 
+        // Usuario 1: El Administrador (Cumple con el Rol 1 del proyecto)
+        listaParaReporte.add(new Usuario(1, "admin", "1234", "Administrador"));
+
+        // Usuario 2: El Analista (Cumple con el Rol 2 del proyecto)
+        listaParaReporte.add(new Usuario(2, "analista_juan", "1234", "Analista"));
+        // Usuario 3: Otro Analista (para que se vea llena la tabla)
+        listaParaReporte.add(new Usuario(3, "analista_maria", "1234", "Analista"));
         // 2. Instanciamos la clase GeneradorPDF
         // (Asegúrate de haber creado el archivo GeneradorPDF.java que te pasé antes)
         GeneradorPDF generador = new GeneradorPDF();
