@@ -29,17 +29,17 @@ public class DatabaseConfig {
      * Carga los parámetros de conexión desde configuración
      */
     private DatabaseConfig() {
-        // Configuración por defecto - puede ser sobreescrita mediante properties
-        this.driver = "com.mysql.cj.jdbc.Driver";
-        this.url = "jdbc:mysql://localhost:3306/sistema_licencias?useSSL=false&serverTimezone=UTC";
-        this.usuario = "root";
-        this.password = "root";
+        // Configuracion de conexión a la base de datos PostgreSQL para Railway con nuevos parámetros
+        this.driver = "org.postgresql.Driver";
+        this.url = "jdbc:postgresql://tramway.proxy.rlwy.net:48638/railway?sslmode=require";
+        this.usuario = "postgres";
+        this.password = "lkdwAbeBqklrMrbeOkrGKYzczwtTNiMZ";
 
         try {
             // Cargar el driver JDBC
             Class.forName(driver);
         } catch (ClassNotFoundException e) {
-            System.err.println("Error al cargar el driver MySQL: " + e.getMessage());
+            System.err.println("Error al cargar el driver PostgreSQL: " + e.getMessage());
         }
     }
 

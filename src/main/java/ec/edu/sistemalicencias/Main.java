@@ -18,27 +18,27 @@ public class Main {
      * Método principal que inicia la aplicación
      */
     public static void main(String[] args) {
-        // Configurar Look and Feel del sistema operativo
+        // Configurar Look and Feel del sistema operativo (Para que se vea nativo como Windows)
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
             System.err.println("No se pudo establecer el Look and Feel: " + e.getMessage());
         }
 
-        // Verificar conexión a base de datos
+        // Instanciamos la configuración (Singleton)
         DatabaseConfig dbConfig = DatabaseConfig.getInstance();
 
         SwingUtilities.invokeLater(() -> {
-            // Mostrar splash screen o mensaje de inicio
+            // Mostrar splash screen o mensaje de inicio actualizado
             mostrarPantallaInicio();
 
-            // Verificar conexión a BD
+            // Verificar conexión a BD (Ahora verifica contra Railway/Postgres)
             if (!dbConfig.verificarConexion()) {
                 mostrarErrorConexion();
-                return;
+                return; // Detenemos la ejecución si no hay red o base de datos
             }
 
-            // Iniciar ventana principal
+            // Si todo sale bien, iniciamos la ventana principal
             MainView mainView = new MainView();
             mainView.setVisible(true);
         });
@@ -52,13 +52,13 @@ public class Main {
                 null,
                 "SISTEMA DE LICENCIAS DE CONDUCIR - ECUADOR\n\n" +
                         "Agencia Nacional de Tránsito\n" +
-                        "Versión 1.0\n\n" +
+                        "Versión 1.0 (Cloud Edition)\n\n" +
                         "Desarrollado con:\n" +
                         "- Java 21\n" +
-                        "- MySQL Database\n" +
+                        "- PostgreSQL (Railway Cloud)\n" + // <--- CAMBIO AQUÍ
                         "- Arquitectura MVC\n" +
                         "- iText PDF\n\n" +
-                        "Iniciando sistema...",
+                        "Conectando con la nube e iniciando sistema...",
                 "Bienvenido",
                 JOptionPane.INFORMATION_MESSAGE
         );
@@ -69,14 +69,12 @@ public class Main {
      */
     private static void mostrarErrorConexion() {
         String mensaje = "ERROR DE CONEXIÓN A BASE DE DATOS\n\n" +
-                "No se pudo establecer conexión con MySQL.\n\n" +
+                "No se pudo establecer conexión con el servidor en la nube (Railway).\n\n" +
                 "Verifique que:\n" +
-                "1. MySQL Server esté ejecutándose\n" +
-                "2. La base de datos 'sistema_licencias' exista\n" +
-                "3. Las credenciales sean correctas (usuario: root, password: root)\n" +
-                "4. El servidor esté en localhost:3306\n\n" +
-                "Para crear la base de datos, ejecute el script:\n" +
-                "src/main/resources/schema.sql\n\n" +
+                "1. Tenga conexión a Internet activa\n" + // <--- CAMBIO IMPORTANTE
+                "2. El servicio de Railway esté operativo\n" +
+                "3. El firewall no esté bloqueando el puerto 48638\n\n" +
+                "Si el problema persiste, contacte al administrador.\n\n" +
                 "La aplicación se cerrará.";
 
         JOptionPane.showMessageDialog(
@@ -89,4 +87,3 @@ public class Main {
         System.exit(1);
     }
 }
-
