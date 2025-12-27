@@ -54,6 +54,8 @@ public class DatabaseConfig {
         return instancia;
     }
 
+
+
     /**
      * Crea y retorna una conexión a la base de datos
      * @return Objeto Connection

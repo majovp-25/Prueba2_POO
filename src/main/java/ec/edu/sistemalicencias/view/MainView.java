@@ -115,6 +115,7 @@ public class MainView extends JFrame {
         btnConsultarLicencias = crearBoton("Consultar Licencias");
         btnGenerarDocumento = crearBoton("Generar Documento PDF");
         btnGestionConductores = crearBoton("Gestión de Conductores");
+        btnGestionUsuarios = crearBoton("Gestión de Usuarios");
         btnSalir = crearBoton("Salir");
 
         // Agregar botones al panel
@@ -157,11 +158,6 @@ public class MainView extends JFrame {
         boton.setFocusPainted(false);
         return boton;
     }
-
-    private void abrirGestionUsuarios() {
-        JOptionPane.showMessageDialog(this, "Pendiente: Gestión de Usuarios");
-    }
-
 
     /**
      * Configura los eventos de los botones del menú principal
@@ -212,11 +208,6 @@ public class MainView extends JFrame {
         btnSalir.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
 
-    public void aplicarPermisosPorRol(String rol) {
-        boolean esAnalista = rol != null && rol.equalsIgnoreCase("Analista");
-        btnGestionUsuarios.setVisible(!esAnalista);
-    }
-
 
     /**
      * Abre la ventana de Gestión de Conductores
@@ -229,6 +220,20 @@ public class MainView extends JFrame {
             mostrarError("Error al abrir Gestión de Conductores: " + ex.getMessage());
         }
     }
+    private void abrirGestionUsuarios() {
+        try {
+            GestionUsuariosView usuariosView = new GestionUsuariosView();
+            usuariosView.setVisible(true);
+        } catch (Exception ex) {
+            mostrarError("Error al abrir Gestión de Usuarios: " + ex.getMessage());
+        }
+    }
+    public void aplicarPermisosPorRol(String rol) {
+        boolean esAnalista = rol != null && rol.equalsIgnoreCase("Analista");
+        btnGestionUsuarios.setVisible(!esAnalista); // bloquea acceso al CRUD
+    }
+
+
 
     /**
      * Abre la ventana de Validar Documentos

@@ -7,54 +7,60 @@ import ec.edu.sistemalicencias.view.LoginView;
 import ec.edu.sistemalicencias.view.MainView;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class Main {
 
     public static void main(String[] args) {
 
-        // 1) Look & Feel (antes de crear cualquier JFrame)
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
             System.err.println("No se pudo establecer el Look and Feel: " + e.getMessage());
         }
 
-        // 2) Inicializar config BD (si tu singleton hace conexión/validación)
         DatabaseConfig.getInstance();
 
-        // 3) Swing siempre en EDT
-        SwingUtilities.invokeLater(() -> {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
 
-            UsuarioDAO dao = new UsuarioDAO();
+                final UsuarioDAO dao = new UsuarioDAO();
 
-            // Mostrar Login
-            LoginView loginView = new LoginView();
-            loginView.setVisible(true);
+                final LoginView loginView = new LoginView();
+                loginView.setVisible(true);
 
-            // Evento del botón Ingresar
-            loginView.addIngresarListener(e -> {
+                loginView.addIngresarListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
 
-                String username = loginView.getUsername();
-                String password = loginView.getPassword();
+                        String username = loginView.getUsername();
+                        String password = loginView.getPassword();
 
-                Usuario usuario = dao.login(username, password);
+                        Usuario usuario = dao.login(username, password);
 
-                if (usuario == null) {
-                    loginView.showError("Credenciales incorrectas o error de conexión.");
-                    loginView.clearFields();
-                    return;
-                }
+                        if (usuario == null) {
+                            loginView.showError("Credenciales incorrectas o error de conexión.");
+                            loginView.clearFields();
+                            return;
+                        }
 
-                String rol = usuario.getRol(); // <-- AQUÍ sale tu rol real desde BD
+                        String rol = usuario.getRol();
 
-                // Abrir MainView y aplicar permisos
-                MainView mainView = new MainView();
-                mainView.aplicarPermisosPorRol(rol);
-                mainView.setVisible(true);
+                        MainView mainView = new MainView();
+                        mainView.aplicarPermisosPorRol(rol);
+                        mainView.setVisible(true);
 
-                // Cerrar Login
-                loginView.dispose();
-            });
+                        loginView.dispose();
+
+
+
+                        loginView.dispose();
+                    }
+                });
+            }
         });
     }
 }
+
