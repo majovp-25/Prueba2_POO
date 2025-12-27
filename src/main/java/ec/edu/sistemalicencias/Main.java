@@ -1,84 +1,60 @@
 package ec.edu.sistemalicencias;
 
 import ec.edu.sistemalicencias.config.DatabaseConfig;
+import ec.edu.sistemalicencias.dao.UsuarioDAO;
+import ec.edu.sistemalicencias.model.Usuario;
+import ec.edu.sistemalicencias.view.LoginView;
 import ec.edu.sistemalicencias.view.MainView;
-import ec.edu.sistemalicencias.model.Usuario; // Importamos Usuario para no escribir la ruta larga
-import ec.edu.sistemalicencias.dao.UsuarioDAO; // Importamos el DAO
 
 import javax.swing.*;
-import java.util.ArrayList; // Necesario para crear la lista
-import java.util.List;      // Necesario para el tipo de dato List
 
-/**
- * Clase principal del Sistema de Licencias de Conducir del Ecuador.
- * Punto de entrada de la aplicación.
- */
 public class Main {
 
     public static void main(String[] args) {
-        // 1. Configurar Look and Feel
+
+        // 1) Look & Feel (antes de crear cualquier JFrame)
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
             System.err.println("No se pudo establecer el Look and Feel: " + e.getMessage());
         }
 
-        // 2. Instanciamos la configuración
-        DatabaseConfig dbConfig = DatabaseConfig.getInstance();
+        // 2) Inicializar config BD (si tu singleton hace conexión/validación)
+        DatabaseConfig.getInstance();
 
-        // ==========================================
-        // 🧪 ZONA DE PRUEBAS DEL LOGIN
-        // ==========================================
-        System.out.println("\n🛠️ --- INICIANDO PRUEBA DE BACKEND (RAILWAY) ---");
+        // 3) Swing siempre en EDT
+        SwingUtilities.invokeLater(() -> {
 
-        UsuarioDAO dao = new UsuarioDAO();
+            UsuarioDAO dao = new UsuarioDAO();
 
-        // TEST 1: Probamos con el ADMIN
-        System.out.println("👉 Intentando login con 'admin'...");
-        Usuario u1 = dao.login("admin", "1234"); 
+            // Mostrar Login
+            LoginView loginView = new LoginView();
+            loginView.setVisible(true);
 
-        if (u1 != null) {
-            System.out.println("✅ ¡ÉXITO! Usuario encontrado: " + u1.getUsername());
-            System.out.println("🔹 Rol detectado: " + u1.getRol());
-        } else {
-            System.out.println("❌ ERROR: No se pudo conectar o usuario incorrecto.");
-        }
+            // Evento del botón Ingresar
+            loginView.addIngresarListener(e -> {
 
-        // TEST 2: Probamos con datos FALSOS
-        System.out.println("\n👉 Intentando login con 'hacker'...");
-        Usuario u2 = dao.login("hacker", "nadie");
+                String username = loginView.getUsername();
+                String password = loginView.getPassword();
 
-        if (u2 == null) {
-            System.out.println("✅ ¡CORRECTO! El sistema rechazó al intruso.");
-        } else {
-            System.out.println("⚠️ ALERTA: El sistema dejó pasar a un usuario falso.");
-        }
-        
-        System.out.println("----------------------------------------------");
+                Usuario usuario = dao.login(username, password);
 
-        // ==========================================
-        // 📄 ZONA DE PRUEBAS DEL PDF (NUEVO)
-        // ==========================================
-        System.out.println("\n📄 --- INICIANDO PRUEBA DE GENERACIÓN PDF ---");
-        
-        // 1. Creamos la lista simulada AJUSTADA A LOS REQUERIMIENTOS
-        List<Usuario> listaParaReporte = new ArrayList<>();
+                if (usuario == null) {
+                    loginView.showError("Credenciales incorrectas o error de conexión.");
+                    loginView.clearFields();
+                    return;
+                }
 
-        // Usuario 1: El Administrador (Cumple con el Rol 1 del proyecto)
-        listaParaReporte.add(new Usuario(1, "admin", "1234", "Administrador"));
+                String rol = usuario.getRol(); // <-- AQUÍ sale tu rol real desde BD
 
-        // Usuario 2: El Analista (Cumple con el Rol 2 del proyecto)
-        listaParaReporte.add(new Usuario(2, "analista_juan", "1234", "Analista"));
-        // Usuario 3: Otro Analista (para que se vea llena la tabla)
-        listaParaReporte.add(new Usuario(3, "analista_maria", "1234", "Analista"));
-        // 2. Instanciamos la clase GeneradorPDF
-        // (Asegúrate de haber creado el archivo GeneradorPDF.java que te pasé antes)
-        GeneradorPDF generador = new GeneradorPDF();
+                // Abrir MainView y aplicar permisos
+                MainView mainView = new MainView();
+                mainView.aplicarPermisosPorRol(rol);
+                mainView.setVisible(true);
 
-        // 3. Generamos el reporte
-        String nombreArchivo = "ReporteUsuarios.pdf";
-        generador.generarReporte(listaParaReporte, nombreArchivo);
-
-        System.out.println("----------------------------------------------\n");
+                // Cerrar Login
+                loginView.dispose();
+            });
+        });
     }
 }
