@@ -27,7 +27,6 @@ public class Main {
             public void run() {
 
                 final UsuarioDAO dao = new UsuarioDAO();
-
                 final LoginView loginView = new LoginView();
                 loginView.setVisible(true);
 
@@ -48,14 +47,9 @@ public class Main {
 
                         String rol = usuario.getRol();
 
-                        MainView mainView = new MainView();
+                        MainView mainView = new MainView(usuario);
                         mainView.aplicarPermisosPorRol(rol);
                         mainView.setVisible(true);
-
-                        loginView.dispose();
-
-
-
                         loginView.dispose();
                     }
                 });

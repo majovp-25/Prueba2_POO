@@ -43,8 +43,8 @@ public class UsuarioDAO {
         String sql = "SELECT id, username, password, rol FROM usuarios ORDER BY id";
 
         try (Connection cn = DatabaseConfig.getInstance().obtenerConexion();
-             PreparedStatement ps = cn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+            PreparedStatement ps = cn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Usuario u = new Usuario(
@@ -66,7 +66,7 @@ public class UsuarioDAO {
     public Usuario create(Usuario u) {
         String sql = "INSERT INTO usuarios (username, password, rol) VALUES (?, ?, ?)";
         try (Connection cn = DatabaseConfig.getInstance().obtenerConexion();
-             PreparedStatement ps = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            PreparedStatement ps = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, u.getUsername());
             ps.setString(2, u.getPassword());
@@ -93,7 +93,7 @@ public class UsuarioDAO {
     public boolean update(Usuario u) {
         String sql = "UPDATE usuarios SET username = ?, password = ?, rol = ? WHERE id = ?";
         try (Connection cn = DatabaseConfig.getInstance().obtenerConexion();
-             PreparedStatement ps = cn.prepareStatement(sql)) {
+            PreparedStatement ps = cn.prepareStatement(sql)) {
 
             ps.setString(1, u.getUsername());
             ps.setString(2, u.getPassword());
@@ -112,7 +112,7 @@ public class UsuarioDAO {
     public boolean delete(int id) {
         String sql = "DELETE FROM usuarios WHERE id = ?";
         try (Connection cn = DatabaseConfig.getInstance().obtenerConexion();
-             PreparedStatement ps = cn.prepareStatement(sql)) {
+            PreparedStatement ps = cn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;

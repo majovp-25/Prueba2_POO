@@ -8,6 +8,7 @@ import ec.edu.sistemalicencias.model.entities.Licencia;
 import ec.edu.sistemalicencias.model.entities.PruebaPsicometrica;
 import ec.edu.sistemalicencias.model.exceptions.LicenciaException;
 import ec.edu.sistemalicencias.util.PDFGenerator;
+import ec.edu.sistemalicencias.model.Usuario;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -46,7 +47,7 @@ public class MainView extends JFrame {
     /**
      * Constructor de la vista principal
      */
-    public MainView() {
+    public MainView(Usuario usuarioLogueado) {
         this.controller = new LicenciaController();
 
         // Inicializar componentes programáticamente
@@ -61,6 +62,9 @@ public class MainView extends JFrame {
 
         configurarEventos();
         configurarEstilos();
+        if(usuarioLogueado != null) {
+            aplicarPermisosPorRol(usuarioLogueado.getRol());
+        }
     }
 
     /**
@@ -125,7 +129,6 @@ public class MainView extends JFrame {
         panelModulos.add(btnEmitirLicencia);
         panelModulos.add(btnConsultarLicencias);
         panelModulos.add(btnGenerarDocumento);
-        panelModulos.add(btnGestionUsuarios);
         panelModulos.add(btnGestionUsuarios);
         panelModulos.add(btnSalir);
         //panelModulos.add(new JLabel()); // Celda vacía para balancear
@@ -229,8 +232,13 @@ public class MainView extends JFrame {
         }
     }
     public void aplicarPermisosPorRol(String rol) {
-        boolean esAnalista = rol != null && rol.equalsIgnoreCase("Analista");
-        btnGestionUsuarios.setVisible(!esAnalista); // bloquea acceso al CRUD
+        System.out.println("DEBUG: El rol que llegó de la BD es: '" + rol + "'");
+        if (rol == null) return;
+        boolean esAnalista = rol.trim().equalsIgnoreCase("Analista");
+        if (btnGestionUsuarios != null) {
+        btnGestionUsuarios.setVisible(!esAnalista);
+        btnGestionUsuarios.setEnabled(!esAnalista);
+        } // bloquea acceso al CRUD
     }
 
 
