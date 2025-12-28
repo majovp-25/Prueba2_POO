@@ -37,7 +37,7 @@ public class LicenciaDAO implements Persistible<Licencia> {
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = dbConfig.obtenerConexion();
-             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setString(1, licencia.getNumeroLicencia());
             stmt.setLong(2, licencia.getConductorId());
@@ -80,7 +80,7 @@ public class LicenciaDAO implements Persistible<Licencia> {
                 "activa = ?, prueba_psicometrica_id = ?, observaciones = ? WHERE id = ?";
 
         try (Connection conn = dbConfig.obtenerConexion();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, licencia.getNumeroLicencia());
             stmt.setLong(2, licencia.getConductorId());
@@ -112,7 +112,7 @@ public class LicenciaDAO implements Persistible<Licencia> {
     public Licencia buscarPorId(Long id) throws BaseDatosException {
         String sql = "SELECT * FROM licencias WHERE id = ?";
         try (Connection conn = dbConfig.obtenerConexion();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) return mapearResultSet(rs);
@@ -126,7 +126,7 @@ public class LicenciaDAO implements Persistible<Licencia> {
     public Licencia buscarPorNumero(String numeroLicencia) throws BaseDatosException {
         String sql = "SELECT * FROM licencias WHERE numero_licencia = ?";
         try (Connection conn = dbConfig.obtenerConexion();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, numeroLicencia);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) return mapearResultSet(rs);
@@ -141,7 +141,7 @@ public class LicenciaDAO implements Persistible<Licencia> {
         String sql = "SELECT * FROM licencias WHERE conductor_id = ? ORDER BY fecha_emision DESC";
         List<Licencia> licencias = new ArrayList<>();
         try (Connection conn = dbConfig.obtenerConexion();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, conductorId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) licencias.add(mapearResultSet(rs));
@@ -156,8 +156,8 @@ public class LicenciaDAO implements Persistible<Licencia> {
         String sql = "SELECT * FROM licencias ORDER BY fecha_emision DESC";
         List<Licencia> licencias = new ArrayList<>();
         try (Connection conn = dbConfig.obtenerConexion();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) licencias.add(mapearResultSet(rs));
         } catch (SQLException e) {
             throw new BaseDatosException("Error al obtener licencias", e);
@@ -169,8 +169,8 @@ public class LicenciaDAO implements Persistible<Licencia> {
         String sql = "SELECT * FROM licencias WHERE activa = TRUE AND fecha_vencimiento > CURRENT_DATE ORDER BY fecha_vencimiento";
         List<Licencia> licencias = new ArrayList<>();
         try (Connection conn = dbConfig.obtenerConexion();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) licencias.add(mapearResultSet(rs));
         } catch (SQLException e) {
             throw new BaseDatosException("Error al obtener licencias vigentes", e);
@@ -182,7 +182,7 @@ public class LicenciaDAO implements Persistible<Licencia> {
     public boolean eliminar(Long id) throws BaseDatosException {
         String sql = "DELETE FROM licencias WHERE id = ?";
         try (Connection conn = dbConfig.obtenerConexion();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, id);
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
