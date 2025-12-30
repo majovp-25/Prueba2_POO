@@ -37,7 +37,7 @@ public class PDFGenerator {
      * @throws IOException Si hay error al escribir el archivo
      */
     public static void generarLicenciaPDF(Licencia licencia, Conductor conductor,
-                                          PruebaPsicometrica prueba, String rutaArchivo)
+                                        PruebaPsicometrica prueba, String rutaArchivo)
             throws DocumentException, IOException {
 
         Document documento = new Document(PageSize.A4);
