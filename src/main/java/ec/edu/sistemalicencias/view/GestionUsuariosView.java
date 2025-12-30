@@ -38,8 +38,8 @@ public class GestionUsuariosView extends JFrame {
     }
 
     private void initUI() {
-        JPanel root = new JPanel(new BorderLayout(10, 10));
-        root.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JPanel root = new JPanel(new BorderLayout(8, 8));
+        root.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
 
         // ===== Tabla =====
         modelo = new DefaultTableModel(new Object[]{"ID", "Username", "Rol"}, 0) {
@@ -56,14 +56,17 @@ public class GestionUsuariosView extends JFrame {
         form.setBorder(BorderFactory.createTitledBorder("Formulario"));
 
         GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(6, 6, 6, 6);
+        c.insets = new Insets(3, 3, 3, 3);
         c.fill = GridBagConstraints.HORIZONTAL;
 
-        txtId = new JTextField(10);
+        c.anchor = GridBagConstraints.NORTHWEST; // pega todo arriba/izquierda
+
+
+        txtId = new JTextField(6);
         txtId.setEnabled(false);
 
-        txtUsername = new JTextField(20);
-        txtPassword = new JPasswordField(20);
+        txtUsername = new JTextField(14);
+        txtPassword = new JPasswordField(14);
         cboRol = new JComboBox<>(new String[]{"Administrador", "Analista"});
 
         c.gridx = 0; c.gridy = 0; form.add(new JLabel("ID:"), c);
@@ -97,11 +100,17 @@ public class GestionUsuariosView extends JFrame {
 
         // ===== Layout =====
         JPanel derecha = new JPanel(new BorderLayout(10, 10));
-        derecha.add(form, BorderLayout.CENTER);
+
+        // envolver el formulario para que quede arriba
+        JPanel formWrapper = new JPanel(new BorderLayout());
+        formWrapper.add(form, BorderLayout.NORTH);
+
+        derecha.add(formWrapper, BorderLayout.CENTER);
         derecha.add(botones, BorderLayout.SOUTH);
 
+
         JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scroll, derecha);
-        split.setResizeWeight(0.55);
+        split.setResizeWeight(0.70);
 
         root.add(split, BorderLayout.CENTER);
         setContentPane(root);
@@ -133,9 +142,10 @@ public class GestionUsuariosView extends JFrame {
 
         txtId.setText(modelo.getValueAt(row, 0).toString());
         txtUsername.setText(modelo.getValueAt(row, 1).toString());
-        // Por seguridad: no mostramos password real en tabla; si necesitas editar password,
-        // el usuario lo escribe nuevamente.
+
+        // Por seguridad no mostramos password real en tabla; se escribe nuevamente si se quiere cambiar.
         txtPassword.setText("");
+
         cboRol.setSelectedItem(modelo.getValueAt(row, 2).toString());
     }
 
@@ -155,6 +165,16 @@ public class GestionUsuariosView extends JFrame {
 
         if (username.isEmpty() || password.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Username y Password son obligatorios.", "Validación", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        if (!passwordValida(password)) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "La contraseña debe tener al menos:\n- 1 mayúscula\n- 1 número\n- 1 carácter especial",
+                    "Validación de contraseña",
+                    JOptionPane.WARNING_MESSAGE
+            );
             return;
         }
 
@@ -188,10 +208,19 @@ public class GestionUsuariosView extends JFrame {
             return;
         }
 
-        // Si password está vacío, puedes decidir: no cambiar password.
-        // Aquí, por simplicidad, exigimos password para editar.
+        // Aquí sigues con la lógica actual: exigir password para editar.
         if (password.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Ingrese un password (o implemente 'no cambiar password').", "Validación", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Ingrese un password para editar.", "Validación", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        if (!passwordValida(password)) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "La contraseña debe tener al menos:\n- 1 mayúscula\n- 1 número\n- 1 carácter especial",
+                    "Validación de contraseña",
+                    JOptionPane.WARNING_MESSAGE
+            );
             return;
         }
 
@@ -238,5 +267,16 @@ public class GestionUsuariosView extends JFrame {
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    // ===== Validación de password (MAYÚSCULA + NÚMERO + ESPECIAL) =====
+    private boolean passwordValida(String password) {
+        if (password == null) return false;
+
+        boolean tieneMayuscula = password.matches(".*[A-Z].*");
+        boolean tieneNumero = password.matches(".*\\d.*");
+        boolean tieneEspecial = password.matches(".*[^A-Za-z0-9].*");
+
+        return tieneMayuscula && tieneNumero && tieneEspecial;
     }
 }

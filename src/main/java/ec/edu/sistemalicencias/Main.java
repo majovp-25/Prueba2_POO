@@ -25,34 +25,40 @@ public class Main {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                mostrarLogin();
+            }
+        });
+    }
 
-                final UsuarioDAO dao = new UsuarioDAO();
-                final LoginView loginView = new LoginView();
-                loginView.setVisible(true);
+    // IMPORTANTE: esto lo llamas al inicio y también al cerrar sesión
+    public static void mostrarLogin() {
 
-                loginView.addIngresarListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
+        final UsuarioDAO dao = new UsuarioDAO();
+        final LoginView loginView = new LoginView();
+        loginView.setVisible(true);
 
-                        String username = loginView.getUsername();
-                        String password = loginView.getPassword();
+        loginView.addIngresarListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
 
-                        Usuario usuario = dao.login(username, password);
+                String username = loginView.getUsername();
+                String password = loginView.getPassword();
 
-                        if (usuario == null) {
-                            loginView.showError("Credenciales incorrectas o error de conexión.");
-                            loginView.clearFields();
-                            return;
-                        }
+                Usuario usuario = dao.login(username, password);
 
-                        String rol = usuario.getRol();
+                if (usuario == null) {
+                    loginView.showError("Credenciales incorrectas o error de conexión.");
+                    loginView.clearFields();
+                    return;
+                }
 
-                        MainView mainView = new MainView(usuario);
-                        mainView.aplicarPermisosPorRol(rol);
-                        mainView.setVisible(true);
-                        loginView.dispose();
-                    }
-                });
+                String rol = usuario.getRol();
+
+                MainView mainView = new MainView(usuario);
+                mainView.aplicarPermisosPorRol(rol);
+                mainView.setVisible(true);
+
+                loginView.dispose();
             }
         });
     }
