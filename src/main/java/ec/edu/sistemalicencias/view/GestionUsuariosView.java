@@ -20,6 +20,11 @@ public class GestionUsuariosView extends JFrame {
     private JTextField txtUsername;
     private JPasswordField txtPassword;
     private JComboBox<String> cboRol;
+    private JTextField txtNombre;
+    private JTextField txtApellido;
+    private JTextField txtTelefono;
+    private JTextField txtCorreo;
+
 
     private JButton btnNuevo;
     private JButton btnGuardar;
@@ -27,6 +32,7 @@ public class GestionUsuariosView extends JFrame {
     private JButton btnEliminar;
     private JButton btnRefrescar;
     private JButton btnCerrar;
+
 
     public GestionUsuariosView() {
         setTitle("Gestión de Usuarios");
@@ -42,6 +48,19 @@ public class GestionUsuariosView extends JFrame {
         JPanel root = new JPanel(new BorderLayout(8, 8));
         root.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
 
+        // =========================
+        // DISEÑO (SOLO VISUAL)
+        // =========================
+        Color bg = new Color(245, 247, 250);
+        Color cardBorder = new Color(225, 230, 236);
+        Color inputBorder = new Color(210, 216, 224);
+        Color text = new Color(25, 30, 35);
+        Color red = new Color(220, 53, 69);
+        Color grayBtn = new Color(108, 117, 125);
+
+        root.setBackground(bg);
+        // =========================
+
         // ===== Tabla =====
         modelo = new DefaultTableModel(new Object[]{"ID", "Username", "Rol"}, 0) {
             @Override
@@ -52,19 +71,49 @@ public class GestionUsuariosView extends JFrame {
         tabla = new JTable(modelo);
         tabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
+        // =========================
+        // DISEÑO (SOLO VISUAL): tabla más presentable
+        // =========================
+        tabla.setRowHeight(26);
+        tabla.setFillsViewportHeight(true);
+        tabla.setSelectionBackground(new Color(220, 53, 69, 35));
+        tabla.setSelectionForeground(text);
+        tabla.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
+        tabla.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        // =========================
+
         JScrollPane scroll = new JScrollPane(tabla);
         scroll.setBorder(BorderFactory.createTitledBorder("Usuarios registrados"));
+
+        // =========================
+        // DISEÑO (SOLO VISUAL): “tarjeta” para el scroll
+        // =========================
+        scroll.getViewport().setBackground(Color.WHITE);
+        scroll.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(cardBorder, 1, true),
+                BorderFactory.createEmptyBorder(8, 8, 8, 8)
+        ));
+        // =========================
 
         // ===== Formulario =====
         JPanel form = new JPanel(new GridBagLayout());
         form.setBorder(BorderFactory.createTitledBorder("Formulario"));
+
+        // =========================
+        // DISEÑO (SOLO VISUAL): tarjeta para formulario
+        // =========================
+        form.setBackground(Color.WHITE);
+        form.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(cardBorder, 1, true),
+                BorderFactory.createEmptyBorder(10, 12, 10, 12)
+        ));
+        // =========================
 
         GridBagConstraints c = new GridBagConstraints();
         c.insets = new Insets(3, 3, 3, 3);
         c.fill = GridBagConstraints.HORIZONTAL;
 
         c.anchor = GridBagConstraints.NORTHWEST; // pega todo arriba/izquierda
-
 
         txtId = new JTextField(6);
         txtId.setEnabled(false);
@@ -73,33 +122,160 @@ public class GestionUsuariosView extends JFrame {
         txtPassword = new JPasswordField(14);
         cboRol = new JComboBox<>(new String[]{"Administrador", "Analista"});
 
+        // ===== NUEVOS CAMPOS (INICIALIZACIÓN) =====
+        txtNombre = new JTextField(14);
+        txtApellido = new JTextField(14);
+        txtTelefono = new JTextField(14);
+        txtCorreo = new JTextField(14);
+
+
+        // =========================
+        // DISEÑO (SOLO VISUAL): inputs bonitos + tipografía
+        // =========================
+        Font inputFont = new Font("Segoe UI", Font.PLAIN, 12);
+
+        txtId.setFont(inputFont);
+        txtUsername.setFont(inputFont);
+        txtPassword.setFont(inputFont);
+        cboRol.setFont(inputFont);
+
+        txtId.setBackground(new Color(248, 249, 250));
+        txtUsername.setBackground(Color.WHITE);
+        txtPassword.setBackground(Color.WHITE);
+
+        txtId.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(inputBorder, 1, true),
+                BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        ));
+        txtUsername.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(inputBorder, 1, true),
+                BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        ));
+        txtPassword.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(inputBorder, 1, true),
+                BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        ));
+        cboRol.setBorder(BorderFactory.createLineBorder(inputBorder, 1, true));
+
+        // ===== NUEVOS CAMPOS (ESTILO) =====
+        txtNombre.setFont(inputFont);
+        txtApellido.setFont(inputFont);
+        txtTelefono.setFont(inputFont);
+        txtCorreo.setFont(inputFont);
+
+        txtNombre.setBackground(Color.WHITE);
+        txtApellido.setBackground(Color.WHITE);
+        txtTelefono.setBackground(Color.WHITE);
+        txtCorreo.setBackground(Color.WHITE);
+
+        txtNombre.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(inputBorder, 1, true),
+                BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        ));
+        txtApellido.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(inputBorder, 1, true),
+                BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        ));
+        txtTelefono.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(inputBorder, 1, true),
+                BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        ));
+        txtCorreo.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(inputBorder, 1, true),
+                BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        ));
+
+        // =========================
+
         c.gridx = 0;
         c.gridy = 0;
-        form.add(new JLabel("ID:"), c);
+        JLabel lblId = new JLabel("ID:");
+        lblId.setForeground(text);
+        lblId.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        form.add(lblId, c);
+
         c.gridx = 1;
         c.gridy = 0;
         form.add(txtId, c);
 
         c.gridx = 0;
         c.gridy = 1;
-        form.add(new JLabel("Username:"), c);
+        JLabel lblUser = new JLabel("Username:");
+        lblUser.setForeground(text);
+        lblUser.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        form.add(lblUser, c);
+
         c.gridx = 1;
         c.gridy = 1;
         form.add(txtUsername, c);
 
         c.gridx = 0;
         c.gridy = 2;
-        form.add(new JLabel("Password:"), c);
+        JLabel lblPass = new JLabel("Password:");
+        lblPass.setForeground(text);
+        lblPass.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        form.add(lblPass, c);
+
         c.gridx = 1;
         c.gridy = 2;
         form.add(txtPassword, c);
 
         c.gridx = 0;
         c.gridy = 3;
-        form.add(new JLabel("Rol:"), c);
+        JLabel lblRol = new JLabel("Rol:");
+        lblRol.setForeground(text);
+        lblRol.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        form.add(lblRol, c);
+
         c.gridx = 1;
         c.gridy = 3;
         form.add(cboRol, c);
+
+        // ===== NUEVOS CAMPOS (FORMULARIO) =====
+        c.gridx = 0;
+        c.gridy = 4;
+        JLabel lblNombre = new JLabel("Nombre:");
+        lblNombre.setForeground(text);
+        lblNombre.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        form.add(lblNombre, c);
+
+        c.gridx = 1;
+        c.gridy = 4;
+        form.add(txtNombre, c);
+
+        c.gridx = 0;
+        c.gridy = 5;
+        JLabel lblApellido = new JLabel("Apellido:");
+        lblApellido.setForeground(text);
+        lblApellido.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        form.add(lblApellido, c);
+
+        c.gridx = 1;
+        c.gridy = 5;
+        form.add(txtApellido, c);
+
+        c.gridx = 0;
+        c.gridy = 6;
+        JLabel lblTelefono = new JLabel("Teléfono:");
+        lblTelefono.setForeground(text);
+        lblTelefono.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        form.add(lblTelefono, c);
+
+        c.gridx = 1;
+        c.gridy = 6;
+        form.add(txtTelefono, c);
+
+        c.gridx = 0;
+        c.gridy = 7;
+        JLabel lblCorreo = new JLabel("Correo:");
+        lblCorreo.setForeground(text);
+        lblCorreo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        form.add(lblCorreo, c);
+
+        c.gridx = 1;
+        c.gridy = 7;
+        form.add(txtCorreo, c);
+
 
         // ===== Botones =====
         JPanel botones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -118,19 +294,75 @@ public class GestionUsuariosView extends JFrame {
         botones.add(btnRefrescar);
         botones.add(btnCerrar);
 
+        // =========================
+        // DISEÑO (SOLO VISUAL): estilo botones
+        // =========================
+        botones.setOpaque(false);
+
+        Font btnFont = new Font("Segoe UI", Font.BOLD, 12);
+
+        // Botones secundarios (gris)
+        JButton[] secundarios = {btnNuevo, btnEditar, btnEliminar, btnRefrescar};
+        for (JButton b : secundarios) {
+            b.setFont(btnFont);
+            b.setFocusPainted(false);
+            b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            b.setBackground(Color.WHITE);
+            b.setForeground(text);
+            b.setOpaque(true);
+            b.setBorder(BorderFactory.createLineBorder(inputBorder, 1, true));
+        }
+
+        // Guardar (rojo)
+        btnGuardar.setFont(btnFont);
+        btnGuardar.setFocusPainted(false);
+        btnGuardar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnGuardar.setBackground(red);
+        btnGuardar.setForeground(Color.WHITE);
+        btnGuardar.setOpaque(true);
+        btnGuardar.setBorderPainted(false);
+
+        // Cerrar (rojo contorno)
+        btnCerrar.setFont(btnFont);
+        btnCerrar.setFocusPainted(false);
+        btnCerrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnCerrar.setBackground(Color.WHITE);
+        btnCerrar.setForeground(red);
+        btnCerrar.setOpaque(true);
+        btnCerrar.setBorder(BorderFactory.createLineBorder(red, 1, true));
+        // =========================
+
         // ===== Layout =====
         JPanel derecha = new JPanel(new BorderLayout(10, 10));
+
+        // =========================
+        // DISEÑO (SOLO VISUAL)
+        // =========================
+        derecha.setBackground(bg);
+        // =========================
 
         // envolver el formulario para que quede arriba
         JPanel formWrapper = new JPanel(new BorderLayout());
         formWrapper.add(form, BorderLayout.NORTH);
 
+        // =========================
+        // DISEÑO (SOLO VISUAL)
+        // =========================
+        formWrapper.setOpaque(false);
+        // =========================
+
         derecha.add(formWrapper, BorderLayout.CENTER);
         derecha.add(botones, BorderLayout.SOUTH);
 
-
         JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scroll, derecha);
         split.setResizeWeight(0.70);
+
+        // =========================
+        // DISEÑO (SOLO VISUAL): estética del split
+        // =========================
+        split.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+        split.setBackground(bg);
+        // =========================
 
         root.add(split, BorderLayout.CENTER);
         setContentPane(root);
@@ -167,6 +399,12 @@ public class GestionUsuariosView extends JFrame {
         txtPassword.setText("");
 
         cboRol.setSelectedItem(modelo.getValueAt(row, 2).toString());
+
+        txtNombre.setText("");
+        txtApellido.setText("");
+        txtTelefono.setText("");
+        txtCorreo.setText("");
+
     }
 
     private void limpiarFormulario() {
@@ -175,6 +413,11 @@ public class GestionUsuariosView extends JFrame {
         txtPassword.setText("");
         cboRol.setSelectedIndex(0);
         tabla.clearSelection();
+        txtNombre.setText("");
+        txtApellido.setText("");
+        txtTelefono.setText("");
+        txtCorreo.setText("");
+
         txtUsername.requestFocus();
     }
 
@@ -182,6 +425,63 @@ public class GestionUsuariosView extends JFrame {
         String username = txtUsername.getText().trim();
         String password = new String(txtPassword.getPassword());
         String rol = (String) cboRol.getSelectedItem();
+        // ===== NUEVOS CAMPOS (lectura) =====
+        String nombre = txtNombre.getText().trim();
+        String apellido = txtApellido.getText().trim();
+        String telefono = txtTelefono.getText().trim();
+        String correo = txtCorreo.getText().trim();
+
+// ===== VALIDACIONES NUEVOS CAMPOS (manejo tipo excepción/validación) =====
+        if (nombre.isEmpty() || apellido.isEmpty() || telefono.isEmpty() || correo.isEmpty()) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Nombre, Apellido, Teléfono y Correo son obligatorios.",
+                    "Validación",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        if (!nombreValido(nombre)) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "El Nombre solo debe contener letras y espacios (mínimo 2 caracteres).",
+                    "Validación",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        if (!apellidoValido(apellido)) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "El Apellido solo debe contener letras y espacios (mínimo 2 caracteres).",
+                    "Validación",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        if (!telefonoValido(telefono)) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "El Teléfono debe contener solo números (7 a 15 dígitos).",
+                    "Validación",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        if (!correoValido(correo)) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Ingrese un correo válido (ej: usuario@dominio.com).",
+                    "Validación",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
 
         if (username.isEmpty() || password.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Username y Password son obligatorios.", "Validación", JOptionPane.WARNING_MESSAGE);
@@ -222,6 +522,63 @@ public class GestionUsuariosView extends JFrame {
         String username = txtUsername.getText().trim();
         String password = new String(txtPassword.getPassword());
         String rol = (String) cboRol.getSelectedItem();
+        // ===== NUEVOS CAMPOS (lectura) =====
+        String nombre = txtNombre.getText().trim();
+        String apellido = txtApellido.getText().trim();
+        String telefono = txtTelefono.getText().trim();
+        String correo = txtCorreo.getText().trim();
+
+// ===== VALIDACIONES NUEVOS CAMPOS =====
+        if (nombre.isEmpty() || apellido.isEmpty() || telefono.isEmpty() || correo.isEmpty()) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Nombre, Apellido, Teléfono y Correo son obligatorios.",
+                    "Validación",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        if (!nombreValido(nombre)) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "El Nombre solo debe contener letras y espacios (mínimo 2 caracteres).",
+                    "Validación",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        if (!apellidoValido(apellido)) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "El Apellido solo debe contener letras y espacios (mínimo 2 caracteres).",
+                    "Validación",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        if (!telefonoValido(telefono)) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "El Teléfono debe contener solo números (7 a 15 dígitos).",
+                    "Validación",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
+        if (!correoValido(correo)) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Ingrese un correo válido (ej: usuario@dominio.com).",
+                    "Validación",
+                    JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
 
         if (username.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Username es obligatorio.", "Validación", JOptionPane.WARNING_MESSAGE);
@@ -299,6 +656,35 @@ public class GestionUsuariosView extends JFrame {
 
         return tieneMayuscula && tieneNumero && tieneEspecial;
     }
+    // ===== Validaciones nuevos campos =====
+    private boolean nombreValido(String nombre) {
+        if (nombre == null) return false;
+        String n = nombre.trim();
+        if (n.length() < 2) return false;
+        return n.matches("^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$");
+    }
+
+    private boolean apellidoValido(String apellido) {
+        if (apellido == null) return false;
+        String a = apellido.trim();
+        if (a.length() < 2) return false;
+        return a.matches("^[A-Za-zÁÉÍÓÚáéíóúÑñ ]+$");
+    }
+
+    private boolean telefonoValido(String telefono) {
+        if (telefono == null) return false;
+        String t = telefono.trim();
+        // 7 a 15 dígitos, solo números
+        return t.matches("^\\d{7,15}$");
+    }
+
+    private boolean correoValido(String correo) {
+        if (correo == null) return false;
+        String c = correo.trim();
+        // Email básico (suficiente para UI)
+        return c.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+    }
+
 
     {
 // GUI initializer generated by IntelliJ IDEA GUI Designer

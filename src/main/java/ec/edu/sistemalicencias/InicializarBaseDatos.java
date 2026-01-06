@@ -7,7 +7,7 @@ import java.sql.Statement;
 public class InicializarBaseDatos {
 
     public static void main(String[] args) {
-        System.out.println("☢️ REINICIANDO BASE DE DATOS MAESTRA (V2.0 FINAL)...");
+        System.out.println("☢️ REINICIANDO BASE DE DATOS MAESTRA (V3.0 - CON MAJO Y JUAN)...");
 
         String sql = """
             -- 1. LIMPIEZA TOTAL (Orden correcto para no romper relaciones)
@@ -16,12 +16,16 @@ public class InicializarBaseDatos {
             DROP TABLE IF EXISTS conductores CASCADE;
             DROP TABLE IF EXISTS usuarios CASCADE;
 
-            -- 2. TABLA USUARIOS
+            -- 2. TABLA USUARIOS (NUEVA ESTRUCTURA)
             CREATE TABLE usuarios (
                 id SERIAL PRIMARY KEY,
-                username VARCHAR(50) NOT NULL UNIQUE,
-                password VARCHAR(255) NOT NULL,
-                rol VARCHAR(50) NOT NULL
+                nombres   VARCHAR(100) NOT NULL,
+                apellidos VARCHAR(100) NOT NULL,
+                telefono  VARCHAR(15),
+                email     VARCHAR(100) UNIQUE,
+                username  VARCHAR(50) NOT NULL UNIQUE,
+                password  VARCHAR(255) NOT NULL,
+                rol       VARCHAR(50) NOT NULL
             );
 
             -- 3. TABLA CONDUCTORES
@@ -39,7 +43,7 @@ public class InicializarBaseDatos {
                 observaciones TEXT
             );
 
-            -- 4. TABLA PRUEBAS PSICOMÉTRICAS (Agregada)
+            -- 4. TABLA PRUEBAS PSICOMÉTRICAS
             CREATE TABLE pruebas_psicometricas (
                 id SERIAL PRIMARY KEY,
                 conductor_id INT NOT NULL,
@@ -53,12 +57,12 @@ public class InicializarBaseDatos {
                 CONSTRAINT fk_pruebas_conductor FOREIGN KEY (conductor_id) REFERENCES conductores(id)
             );
 
-            -- 5. TABLA LICENCIAS (Corregida con VARCHAR 150)
+            -- 5. TABLA LICENCIAS
             CREATE TABLE licencias (
                 id SERIAL PRIMARY KEY,
                 conductor_id INT NOT NULL,
                 numero_licencia VARCHAR(50),
-                tipo_licencia VARCHAR(150) NOT NULL, -- AQUI ESTÁ EL ARREGLO
+                tipo_licencia VARCHAR(150) NOT NULL,
                 fecha_emision DATE DEFAULT CURRENT_DATE,
                 fecha_vencimiento DATE NOT NULL,
                 activa BOOLEAN DEFAULT TRUE,
@@ -69,8 +73,11 @@ public class InicializarBaseDatos {
             );
 
             -- 6. DATOS BASE
-            INSERT INTO usuarios (username, password, rol) VALUES ('admin', '1234', 'Administrador');
-            INSERT INTO usuarios (username, password, rol) VALUES ('analista1', '1234', 'Analista');
+            INSERT INTO usuarios (username, password, rol, nombres, apellidos, telefono, email)
+            VALUES ('admin', '1234', 'Administrador', 'María José', 'Paredes', '0968830302', 'mariaparedes@gmail.com');
+                
+            INSERT INTO usuarios (username, password, rol, nombres, apellidos, telefono, email)
+            VALUES ('analista1', '1234', 'Analista', 'Juan', 'Vasquez', '0963218871', 'juanvasquez@gmail.com');
         """;
 
         try (Connection conn = DatabaseConfig.getInstance().obtenerConexion();
@@ -78,7 +85,7 @@ public class InicializarBaseDatos {
 
             stmt.executeUpdate(sql);
             System.out.println("✅ ¡BASE DE DATOS LISTA PARA PRODUCCIÓN!");
-            System.out.println("Este script contiene toda la estructura correcta del proyecto.");
+            System.out.println("✅ Usuarios 'admin' (Majo) y 'analista1' (Juan) creados.");
 
         } catch (Exception e) {
             System.err.println("❌ Error: " + e.getMessage());
