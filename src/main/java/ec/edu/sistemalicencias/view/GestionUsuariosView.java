@@ -76,6 +76,9 @@ public class GestionUsuariosView extends JFrame {
         tabla = new JTable(modelo);
         tabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
+        JScrollPane scroll = new JScrollPane(tabla);
+        scroll.setBorder(BorderFactory.createTitledBorder("Usuarios registrados"));
+
         // =========================
         // DISEÑO (SOLO VISUAL): tabla más presentable
         // =========================
@@ -86,9 +89,6 @@ public class GestionUsuariosView extends JFrame {
         tabla.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
         tabla.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         // =========================
-
-        JScrollPane scroll = new JScrollPane(tabla);
-        scroll.setBorder(BorderFactory.createTitledBorder("Usuarios registrados"));
 
         // =========================
         // DISEÑO (SOLO VISUAL): “tarjeta” para el scroll
@@ -104,15 +104,11 @@ public class GestionUsuariosView extends JFrame {
         JPanel form = new JPanel(new GridBagLayout());
         form.setBorder(BorderFactory.createTitledBorder("Formulario"));
 
-        // =========================
-        // DISEÑO (SOLO VISUAL): tarjeta para formulario
-        // =========================
         form.setBackground(Color.WHITE);
         form.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(cardBorder, 1, true),
                 BorderFactory.createEmptyBorder(10, 12, 10, 12)
         ));
-        // =========================
 
         GridBagConstraints c = new GridBagConstraints();
         c.insets = new Insets(3, 3, 3, 3);
@@ -127,16 +123,6 @@ public class GestionUsuariosView extends JFrame {
         txtPassword = new JPasswordField(14);
         cboRol = new JComboBox<>(new String[]{"Administrador", "Analista"});
 
-        // ===== NUEVOS CAMPOS (INICIALIZACIÓN) =====
-        txtNombre = new JTextField(14);
-        txtApellido = new JTextField(14);
-        txtTelefono = new JTextField(14);
-        txtCorreo = new JTextField(14);
-
-
-        // =========================
-        // DISEÑO (SOLO VISUAL): inputs bonitos + tipografía
-        // =========================
         Font inputFont = new Font("Segoe UI", Font.PLAIN, 12);
 
         txtId.setFont(inputFont);
@@ -161,36 +147,6 @@ public class GestionUsuariosView extends JFrame {
                 BorderFactory.createEmptyBorder(5, 8, 5, 8)
         ));
         cboRol.setBorder(BorderFactory.createLineBorder(inputBorder, 1, true));
-
-        // ===== NUEVOS CAMPOS (ESTILO) =====
-        txtNombre.setFont(inputFont);
-        txtApellido.setFont(inputFont);
-        txtTelefono.setFont(inputFont);
-        txtCorreo.setFont(inputFont);
-
-        txtNombre.setBackground(Color.WHITE);
-        txtApellido.setBackground(Color.WHITE);
-        txtTelefono.setBackground(Color.WHITE);
-        txtCorreo.setBackground(Color.WHITE);
-
-        txtNombre.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(inputBorder, 1, true),
-                BorderFactory.createEmptyBorder(5, 8, 5, 8)
-        ));
-        txtApellido.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(inputBorder, 1, true),
-                BorderFactory.createEmptyBorder(5, 8, 5, 8)
-        ));
-        txtTelefono.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(inputBorder, 1, true),
-                BorderFactory.createEmptyBorder(5, 8, 5, 8)
-        ));
-        txtCorreo.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(inputBorder, 1, true),
-                BorderFactory.createEmptyBorder(5, 8, 5, 8)
-        ));
-
-        // =========================
 
         c.gridx = 0;
         c.gridy = 0;
@@ -236,80 +192,31 @@ public class GestionUsuariosView extends JFrame {
         c.gridy = 3;
         form.add(cboRol, c);
 
-        // ===== NUEVOS CAMPOS (FORMULARIO) =====
-        c.gridx = 0;
-        c.gridy = 4;
-        JLabel lblNombre = new JLabel("Nombre:");
-        lblNombre.setForeground(text);
-        lblNombre.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        form.add(lblNombre, c);
-
-        c.gridx = 1;
-        c.gridy = 4;
-        form.add(txtNombre, c);
-
-        c.gridx = 0;
-        c.gridy = 5;
-        JLabel lblApellido = new JLabel("Apellido:");
-        lblApellido.setForeground(text);
-        lblApellido.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        form.add(lblApellido, c);
-
-        c.gridx = 1;
-        c.gridy = 5;
-        form.add(txtApellido, c);
-
-        c.gridx = 0;
-        c.gridy = 6;
-        JLabel lblTelefono = new JLabel("Teléfono:");
-        lblTelefono.setForeground(text);
-        lblTelefono.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        form.add(lblTelefono, c);
-
-        c.gridx = 1;
-        c.gridy = 6;
-        form.add(txtTelefono, c);
-
-        c.gridx = 0;
-        c.gridy = 7;
-        JLabel lblCorreo = new JLabel("Correo:");
-        lblCorreo.setForeground(text);
-        lblCorreo.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        form.add(lblCorreo, c);
-
-        c.gridx = 1;
-        c.gridy = 7;
-        form.add(txtCorreo, c);
-
-
         // ===== Botones =====
-        JPanel botones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel botones = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
 
-        btnNuevo = new JButton("Nuevo");
         btnGuardar = new JButton("Guardar");
         btnEditar = new JButton("Editar");
         btnEliminar = new JButton("Eliminar");
         btnRefrescar = new JButton("Refrescar");
         btnCerrar = new JButton("Cerrar");
-        btnImprimir = new JButton("PDF");
 
-        botones.add(btnNuevo);
         botones.add(btnGuardar);
         botones.add(btnEditar);
         botones.add(btnEliminar);
         botones.add(btnRefrescar);
-        botones.add(btnImprimir);
         botones.add(btnCerrar);
 
         // =========================
         // DISEÑO (SOLO VISUAL): estilo botones
         // =========================
         botones.setOpaque(false);
+        botones.setLayout(new FlowLayout(FlowLayout.CENTER, 12, 10));  // Mantener el espaciado entre los botones
 
         Font btnFont = new Font("Segoe UI", Font.BOLD, 12);
 
-        // Botones secundarios (gris)
-        JButton[] secundarios = {btnNuevo, btnEditar, btnEliminar, btnRefrescar, btnImprimir};
+        // Botones secundarios
+        JButton[] secundarios = {btnEditar, btnEliminar, btnRefrescar};
         for (JButton b : secundarios) {
             b.setFont(btnFont);
             b.setFocusPainted(false);
@@ -317,10 +224,11 @@ public class GestionUsuariosView extends JFrame {
             b.setBackground(Color.WHITE);
             b.setForeground(text);
             b.setOpaque(true);
-            b.setBorder(BorderFactory.createLineBorder(inputBorder, 1, true));
+            b.setBorder(BorderFactory.createEmptyBorder(5, 12, 5, 12));
+            b.setPreferredSize(new Dimension(80, 30));
         }
 
-        // Guardar (rojo)
+        // Guardar
         btnGuardar.setFont(btnFont);
         btnGuardar.setFocusPainted(false);
         btnGuardar.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -328,48 +236,36 @@ public class GestionUsuariosView extends JFrame {
         btnGuardar.setForeground(Color.WHITE);
         btnGuardar.setOpaque(true);
         btnGuardar.setBorderPainted(false);
+        btnGuardar.setPreferredSize(new Dimension(80, 30));
 
-        // Cerrar (rojo contorno)
+        // Cerrar
         btnCerrar.setFont(btnFont);
         btnCerrar.setFocusPainted(false);
         btnCerrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnCerrar.setBackground(Color.WHITE);
         btnCerrar.setForeground(red);
         btnCerrar.setOpaque(true);
-        btnCerrar.setBorder(BorderFactory.createLineBorder(red, 1, true));
-        // =========================
+        btnCerrar.setBorder(BorderFactory.createLineBorder(red, 2, true));
+        btnCerrar.setPreferredSize(new Dimension(80, 30));
 
-        // ===== Layout =====
+
+
+        // =========================
+        // Layout de la interfaz
+        // =========================
         JPanel derecha = new JPanel(new BorderLayout(10, 10));
-
-        // =========================
-        // DISEÑO (SOLO VISUAL)
-        // =========================
         derecha.setBackground(bg);
-        // =========================
 
-        // envolver el formulario para que quede arriba
         JPanel formWrapper = new JPanel(new BorderLayout());
         formWrapper.add(form, BorderLayout.NORTH);
-
-        // =========================
-        // DISEÑO (SOLO VISUAL)
-        // =========================
         formWrapper.setOpaque(false);
-        // =========================
-
         derecha.add(formWrapper, BorderLayout.CENTER);
         derecha.add(botones, BorderLayout.SOUTH);
 
         JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scroll, derecha);
         split.setResizeWeight(0.70);
-
-        // =========================
-        // DISEÑO (SOLO VISUAL): estética del split
-        // =========================
         split.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         split.setBackground(bg);
-        // =========================
 
         root.add(split, BorderLayout.CENTER);
         setContentPane(root);
@@ -379,14 +275,13 @@ public class GestionUsuariosView extends JFrame {
             if (!e.getValueIsAdjusting()) cargarSeleccionEnFormulario();
         });
 
-        btnNuevo.addActionListener(e -> limpiarFormulario());
         btnGuardar.addActionListener(e -> crearUsuario());
         btnEditar.addActionListener(e -> editarUsuario());
         btnEliminar.addActionListener(e -> eliminarUsuario());
         btnRefrescar.addActionListener(e -> cargarTabla());
         btnCerrar.addActionListener(e -> dispose());
-        btnImprimir.addActionListener(e -> {generarReportePDF();});
     }
+
 
     private void cargarTabla() {
         modelo.setRowCount(0);
