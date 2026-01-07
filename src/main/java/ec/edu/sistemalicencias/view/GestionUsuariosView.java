@@ -199,12 +199,14 @@ public class GestionUsuariosView extends JFrame {
         btnEditar = new JButton("Editar");
         btnEliminar = new JButton("Eliminar");
         btnRefrescar = new JButton("Refrescar");
+        btnImprimir = new JButton("PDF");
         btnCerrar = new JButton("Cerrar");
 
         botones.add(btnGuardar);
         botones.add(btnEditar);
         botones.add(btnEliminar);
         botones.add(btnRefrescar);
+        botones.add(btnImprimir);
         botones.add(btnCerrar);
 
         // =========================
@@ -216,7 +218,7 @@ public class GestionUsuariosView extends JFrame {
         Font btnFont = new Font("Segoe UI", Font.BOLD, 12);
 
         // Botones secundarios
-        JButton[] secundarios = {btnEditar, btnEliminar, btnRefrescar};
+        JButton[] secundarios = {btnEditar, btnEliminar, btnRefrescar, btnImprimir};
         for (JButton b : secundarios) {
             b.setFont(btnFont);
             b.setFocusPainted(false);
@@ -224,7 +226,7 @@ public class GestionUsuariosView extends JFrame {
             b.setBackground(Color.WHITE);
             b.setForeground(text);
             b.setOpaque(true);
-            b.setBorder(BorderFactory.createEmptyBorder(5, 12, 5, 12));
+            b.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
             b.setPreferredSize(new Dimension(80, 30));
         }
 
@@ -279,6 +281,7 @@ public class GestionUsuariosView extends JFrame {
         btnEditar.addActionListener(e -> editarUsuario());
         btnEliminar.addActionListener(e -> eliminarUsuario());
         btnRefrescar.addActionListener(e -> cargarTabla());
+        btnImprimir.addActionListener(e -> generarReportePDF());
         btnCerrar.addActionListener(e -> dispose());
     }
 
