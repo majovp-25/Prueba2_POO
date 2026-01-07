@@ -499,7 +499,7 @@ public class GestionUsuariosView extends JFrame {
         }
 
         try {
-            Usuario creado = controller.crearUsuario(username, password, rol);
+            Usuario creado = controller.crearUsuario(username, password, rol, nombre, apellido, telefono, correo);
             if (creado != null) {
                 JOptionPane.showMessageDialog(this, "Usuario creado con ID: " + creado.getId(), "OK", JOptionPane.INFORMATION_MESSAGE);
                 cargarTabla();
@@ -602,7 +602,7 @@ public class GestionUsuariosView extends JFrame {
         }
 
         try {
-            boolean ok = controller.actualizarUsuario(id, username, password, rol);
+            boolean ok = controller.actualizarUsuario(id, username, password, rol, nombre, apellido, telefono, correo);
             if (ok) {
                 JOptionPane.showMessageDialog(this, "Usuario actualizado.", "OK", JOptionPane.INFORMATION_MESSAGE);
                 cargarTabla();

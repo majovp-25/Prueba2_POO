@@ -17,35 +17,70 @@ public class UsuarioController {
         return dao.findAll();
     }
 
-    // ===== MÉTODO ORIGINAL
+    // ===== MÉTODO ORIGINAL (se mantiene) =====
     public Usuario crearUsuario(String username, String password, String rol) {
-        Usuario u = new Usuario(0, username, password, rol);
+        Usuario u = new Usuario();
+        u.setId(0);
+        u.setUsername(username);
+        u.setPassword(password);
+        u.setRol(rol);
+        // OJO: aquí NO se setean nombres/apellidos/etc. (si tu BD los exige NOT NULL, este método no debe usarse)
         return dao.create(u);
     }
 
-    // ===== MÉTODO NUEVO CRUD ampliado =====
+    // ===== MÉTODO NUEVO CRUD ampliado (CORREGIDO) =====
     public Usuario crearUsuario(String username, String password, String rol,
                                 String nombre, String apellido, String telefono, String correo) {
 
         validarDatos(username, password, rol, nombre, apellido, telefono, correo);
 
-        Usuario u = new Usuario(0, username, password, rol, nombre, apellido, telefono, correo);
+        Usuario u = new Usuario();
+        u.setId(0);
+
+        // Campos personales
+        u.setNombre(nombre);
+        u.setApellido(apellido);
+        u.setTelefono(telefono);
+        u.setEmail(correo);
+
+        // Credenciales
+        u.setUsername(username);
+        u.setPassword(password);
+        u.setRol(rol);
+
         return dao.create(u);
     }
 
-    // ===== MÉTODO ORIGINAL
+    // ===== MÉTODO ORIGINAL (se mantiene) =====
     public boolean actualizarUsuario(int id, String username, String password, String rol) {
-        Usuario u = new Usuario(id, username, password, rol);
+        Usuario u = new Usuario();
+        u.setId(id);
+        u.setUsername(username);
+        u.setPassword(password);
+        u.setRol(rol);
         return dao.update(u);
     }
 
-    // ===== MÉTODO NUEVO CRUD ampliado =====
+    // ===== MÉTODO NUEVO CRUD ampliado (CORREGIDO) =====
     public boolean actualizarUsuario(int id, String username, String password, String rol,
                                      String nombre, String apellido, String telefono, String correo) {
 
         validarDatos(username, password, rol, nombre, apellido, telefono, correo);
 
-        Usuario u = new Usuario(id, username, password, rol, nombre, apellido, telefono, correo);
+        Usuario u = new Usuario();
+        u.setId(id);
+
+        // Campos personales
+        u.setNombre(nombre);
+        u.setApellido(apellido);
+        u.setTelefono(telefono);
+        u.setEmail(correo);
+
+        // Credenciales
+        u.setUsername(username);
+        u.setPassword(password);
+        u.setRol(rol);
+
         return dao.update(u);
     }
 
@@ -53,8 +88,7 @@ public class UsuarioController {
         return dao.delete(id);
     }
 
-    // ===== VALIDACIONES + EXCEPCIONES DE NEGOCIO =====
-    // Aquí es donde va la lógica de validación (NO en el DAO).
+    // ===== VALIDACIONES =====
     private void validarDatos(String username, String password, String rol,
                               String nombre, String apellido, String telefono, String correo) {
 
@@ -75,17 +109,16 @@ public class UsuarioController {
             throw new IllegalArgumentException("Apellido es obligatorio.");
         }
 
-        // Teléfono: solo números (7 a 15). Ajusta si tu profe pide otro formato.
         if (telefono == null || !telefono.trim().matches("\\d{7,15}")) {
             throw new IllegalArgumentException("Teléfono inválido (solo números, 7 a 15 dígitos).");
         }
 
-        // Correo: validación simple
         if (correo == null || !correo.trim().matches("^[\\w._%+-]+@[\\w.-]+\\.[A-Za-z]{2,}$")) {
             throw new IllegalArgumentException("Correo inválido.");
         }
     }
 }
+
 
 
 

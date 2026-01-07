@@ -7,16 +7,18 @@ import ec.edu.sistemalicencias.model.exceptions.BaseDatosException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.*;
+import java.sql.SQLException;
+
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-
 
 public class UsuarioDAO {
 
     public Usuario login(String username, String password) {
         Usuario usuarioEncontrado = null;
-        String sql = "SELECT * FROM usuarios WHERE username = ? AND password = ?";
+        String sql = "SELECT id, nombres, apellidos, telefono, email, username, password, rol " +
+                "FROM usuarios WHERE username = ? AND password = ?";
 
         try (Connection conn = DatabaseConfig.getInstance().obtenerConexion();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -37,49 +39,56 @@ public class UsuarioDAO {
                     usuarioEncontrado.setRol(rs.getString("rol"));
                 }
             }
-        } catch (Exception e) {
-            System.err.println("Error en el login: " + e.getMessage());
+
+        } catch (BaseDatosException e) {
+            throw new RuntimeException("Error en el login: " + e.getMessage(), e);
+        } catch (SQLException e) {
+            throw new RuntimeException("Error en el login: " + e.getMessage(), e);
         }
+
         return usuarioEncontrado;
     }
+
     public List<Usuario> findAll() {
         List<Usuario> lista = new ArrayList<>();
-        String sql = "SELECT id, username, password, rol, nombres, apellidos, telefono, email FROM usuarios ORDER BY id";
 
+        // Selecciona columnas explícitas y mapea por nombre (evita orden incorrecto)
+        String sql = "SELECT id, nombres, apellidos, telefono, email, username, password, rol " +
+                "FROM usuarios ORDER BY id";
 
         try (Connection cn = DatabaseConfig.getInstance().obtenerConexion();
              PreparedStatement ps = cn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                Usuario u = new Usuario(
-                        rs.getInt("id"),
-                        rs.getString("nombres"),
-                        rs.getString("apellidos"),
-                        rs.getString("telefono"),
-                        rs.getString("email"),
-                        rs.getString("username"),
-                        rs.getString("password"),
-                        rs.getString("rol")
-                );
+                Usuario u = new Usuario();
+                u.setId(rs.getInt("id"));
+                u.setNombre(rs.getString("nombres"));
+                u.setApellido(rs.getString("apellidos"));
+                u.setTelefono(rs.getString("telefono"));
+                u.setEmail(rs.getString("email"));
+                u.setUsername(rs.getString("username"));
+                u.setPassword(rs.getString("password"));
+                u.setRol(rs.getString("rol"));
                 lista.add(u);
             }
+
+        } catch (BaseDatosException e) {
+            throw new RuntimeException("Error listando usuarios: " + e.getMessage(), e);
         } catch (SQLException e) {
             throw new RuntimeException("Error listando usuarios: " + e.getMessage(), e);
-        } catch (BaseDatosException e) {
-            throw new RuntimeException(e);
         }
+
         return lista;
     }
 
     public Usuario create(Usuario u) {
         String sql = "INSERT INTO usuarios (username, password, rol, nombres, apellidos, telefono, email) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                "VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id";
 
         try (Connection cn = DatabaseConfig.getInstance().obtenerConexion();
-             PreparedStatement ps = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = cn.prepareStatement(sql)) {
 
-            // Orden correcto según el SQL:
             ps.setString(1, u.getUsername());
             ps.setString(2, u.getPassword());
             ps.setString(3, u.getRol());
@@ -88,25 +97,21 @@ public class UsuarioDAO {
             ps.setString(6, u.getTelefono());
             ps.setString(7, u.getEmail());
 
-            int rows = ps.executeUpdate();
-            if (rows == 0) return null;
-
-            try (ResultSet keys = ps.getGeneratedKeys()) {
+            try (ResultSet keys = ps.executeQuery()) {
                 if (keys.next()) {
                     u.setId(keys.getInt(1));
                     return u;
                 }
             }
+
             return null;
 
+        } catch (BaseDatosException e) {
+            throw new RuntimeException("Error creando usuario: " + e.getMessage(), e);
         } catch (SQLException e) {
             throw new RuntimeException("Error creando usuario: " + e.getMessage(), e);
-        } catch (BaseDatosException e) {
-            throw new RuntimeException(e);
         }
     }
-
-
 
     public boolean update(Usuario u) {
         String sql = "UPDATE usuarios SET username = ?, password = ?, rol = ?, nombres = ?, apellidos = ?, telefono = ?, email = ? " +
@@ -115,7 +120,6 @@ public class UsuarioDAO {
         try (Connection cn = DatabaseConfig.getInstance().obtenerConexion();
              PreparedStatement ps = cn.prepareStatement(sql)) {
 
-            // Orden correcto según el SQL:
             ps.setString(1, u.getUsername());
             ps.setString(2, u.getPassword());
             ps.setString(3, u.getRol());
@@ -127,27 +131,26 @@ public class UsuarioDAO {
 
             return ps.executeUpdate() > 0;
 
+        } catch (BaseDatosException e) {
+            throw new RuntimeException("Error actualizando usuario: " + e.getMessage(), e);
         } catch (SQLException e) {
             throw new RuntimeException("Error actualizando usuario: " + e.getMessage(), e);
-        } catch (BaseDatosException e) {
-            throw new RuntimeException(e);
         }
     }
 
-
     public boolean delete(int id) {
         String sql = "DELETE FROM usuarios WHERE id = ?";
+
         try (Connection cn = DatabaseConfig.getInstance().obtenerConexion();
              PreparedStatement ps = cn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;
 
+        } catch (BaseDatosException e) {
+            throw new RuntimeException("Error eliminando usuario: " + e.getMessage(), e);
         } catch (SQLException e) {
             throw new RuntimeException("Error eliminando usuario: " + e.getMessage(), e);
-        } catch (BaseDatosException e) {
-            throw new RuntimeException(e);
         }
     }
-
 }
