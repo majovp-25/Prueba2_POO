@@ -3,6 +3,10 @@ package ec.edu.sistemalicencias.view;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import ec.edu.sistemalicencias.controller.UsuarioController;
 import ec.edu.sistemalicencias.model.Usuario;
+import ec.edu.sistemalicencias.util.GeneradorReporteUsuarios;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.io.File;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -32,6 +36,7 @@ public class GestionUsuariosView extends JFrame {
     private JButton btnEliminar;
     private JButton btnRefrescar;
     private JButton btnCerrar;
+    private JButton btnImprimir;
 
 
     public GestionUsuariosView() {
@@ -286,12 +291,14 @@ public class GestionUsuariosView extends JFrame {
         btnEliminar = new JButton("Eliminar");
         btnRefrescar = new JButton("Refrescar");
         btnCerrar = new JButton("Cerrar");
+        btnImprimir = new JButton("PDF");
 
         botones.add(btnNuevo);
         botones.add(btnGuardar);
         botones.add(btnEditar);
         botones.add(btnEliminar);
         botones.add(btnRefrescar);
+        botones.add(btnImprimir);
         botones.add(btnCerrar);
 
         // =========================
@@ -302,7 +309,7 @@ public class GestionUsuariosView extends JFrame {
         Font btnFont = new Font("Segoe UI", Font.BOLD, 12);
 
         // Botones secundarios (gris)
-        JButton[] secundarios = {btnNuevo, btnEditar, btnEliminar, btnRefrescar};
+        JButton[] secundarios = {btnNuevo, btnEditar, btnEliminar, btnRefrescar, btnImprimir};
         for (JButton b : secundarios) {
             b.setFont(btnFont);
             b.setFocusPainted(false);
@@ -378,6 +385,7 @@ public class GestionUsuariosView extends JFrame {
         btnEliminar.addActionListener(e -> eliminarUsuario());
         btnRefrescar.addActionListener(e -> cargarTabla());
         btnCerrar.addActionListener(e -> dispose());
+        btnImprimir.addActionListener(e -> {generarReportePDF();});
     }
 
     private void cargarTabla() {
@@ -646,6 +654,50 @@ public class GestionUsuariosView extends JFrame {
         }
     }
 
+    //Constructor Generador de reporte de Usuarios
+    private void generarReportePDF() {
+        try {
+            // 1. Validar que haya datos
+            List<Usuario> listaCompleta = controller.listarUsuarios();
+            if (listaCompleta.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "No hay datos para imprimir.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            // 2. Configurar el selector de archivos (JFileChooser)
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Guardar Reporte de Usuarios");
+
+            // Filtro para que solo muestre archivos PDF
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("Archivos PDF (*.pdf)", "pdf");
+            fileChooser.setFileFilter(filter);
+
+            // Sugerir un nombre por defecto
+            String nombreSugerido = "Reporte_Usuarios_" + System.currentTimeMillis() + ".pdf";
+            fileChooser.setSelectedFile(new File(nombreSugerido));
+
+            // 3. Mostrar la ventana "Guardar Como"
+            int seleccion = fileChooser.showSaveDialog(this);
+
+            if (seleccion == JFileChooser.APPROVE_OPTION) {
+                File archivoSeleccionado = fileChooser.getSelectedFile();
+                String ruta = archivoSeleccionado.getAbsolutePath();
+
+                // Asegurar que termine en .pdf si el usuario no lo escribió
+                if (!ruta.toLowerCase().endsWith(".pdf")) {
+                    ruta += ".pdf";
+                }
+
+                // 4. Llamar al generador enviándole la ruta elegida
+                ec.edu.sistemalicencias.util.GeneradorReporteUsuarios.generarPDF(listaCompleta, ruta);
+            }
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+    }
+
     // ===== Validación de password (MAYÚSCULA + NÚMERO + ESPECIAL) =====
     private boolean passwordValida(String password) {
         if (password == null) return false;
@@ -684,6 +736,7 @@ public class GestionUsuariosView extends JFrame {
         // Email básico (suficiente para UI)
         return c.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
     }
+
 
 
     {
