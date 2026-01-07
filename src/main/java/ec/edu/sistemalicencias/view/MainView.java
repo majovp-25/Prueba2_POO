@@ -120,7 +120,6 @@ public class MainView extends JFrame {
         btnEmitirLicencia = crearBoton("Emitir Licencia");
         btnConsultarLicencias = crearBoton("Consultar Licencias");
         btnGenerarDocumento = crearBoton("Generar Documento PDF");
-        btnGestionConductores = crearBoton("Gestión de Conductores");
         btnGestionUsuarios = crearBoton("Gestión de Usuarios");
         btnSalir = crearBoton("Cerrar Sesión");
 
@@ -254,13 +253,37 @@ public class MainView extends JFrame {
     }
 
     public void aplicarPermisosPorRol(String rol) {
-        System.out.println("DEBUG: El rol que llegó de la BD es: '" + rol + "'");
         if (rol == null) return;
-        boolean esAnalista = rol.trim().equalsIgnoreCase("Analista");
-        if (btnGestionUsuarios != null) {
-            btnGestionUsuarios.setVisible(!esAnalista);
-            btnGestionUsuarios.setEnabled(!esAnalista);
-        } // bloquea acceso al CRUD
+
+        if (rol.trim().equalsIgnoreCase("Administrador")) {
+
+            btnGestionConductores.setVisible(false);
+            btnValidarDocumentos.setVisible(false);
+            btnPruebasPsicometricas.setVisible(false);
+            btnEmitirLicencia.setVisible(false);
+            btnConsultarLicencias.setVisible(false);
+            btnGenerarDocumento.setVisible(false);
+
+            if (btnGestionUsuarios != null) {
+                btnGestionUsuarios.setVisible(true);
+            }
+
+            //Abre la ventana de gestion de usuarios automaticamente si se logea como admin
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                abrirGestionUsuarios();
+            });
+
+        } else {
+            if (btnGestionUsuarios != null) {
+                btnGestionUsuarios.setVisible(false);
+            }
+            btnGestionConductores.setVisible(true);
+            btnValidarDocumentos.setVisible(true);
+            btnPruebasPsicometricas.setVisible(true);
+            btnEmitirLicencia.setVisible(true);
+            btnConsultarLicencias.setVisible(true);
+            btnGenerarDocumento.setVisible(true);
+        }
     }
 
 

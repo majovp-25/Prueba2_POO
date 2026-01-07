@@ -55,9 +55,7 @@ public class Main {
                 String rol = usuario.getRol();
 
                 MainView mainView = new MainView(usuario);
-                mainView.aplicarPermisosPorRol(rol);
                 mainView.setVisible(true);
-
                 loginView.dispose();
             }
         });
