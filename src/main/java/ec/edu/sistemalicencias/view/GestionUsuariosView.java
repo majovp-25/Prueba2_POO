@@ -123,6 +123,11 @@ public class GestionUsuariosView extends JFrame {
         txtPassword = new JPasswordField(14);
         cboRol = new JComboBox<>(new String[]{"Administrador", "Analista"});
 
+        txtNombre = new JTextField(14);
+        txtApellido = new JTextField(14);
+        txtTelefono = new JTextField(14);
+        txtCorreo = new JTextField(14);
+
         Font inputFont = new Font("Segoe UI", Font.PLAIN, 12);
 
         txtId.setFont(inputFont);
@@ -191,6 +196,30 @@ public class GestionUsuariosView extends JFrame {
         c.gridx = 1;
         c.gridy = 3;
         form.add(cboRol, c);
+
+        c.gridx = 0;
+        c.gridy = 4;
+        form.add(new JLabel("Nombre:"), c);
+        c.gridx = 1;
+        form.add(txtNombre, c);
+
+        c.gridx = 0;
+        c.gridy = 5;
+        form.add(new JLabel("Apellido:"), c);
+        c.gridx = 1;
+        form.add(txtApellido, c);
+
+        c.gridx = 0;
+        c.gridy = 6;
+        form.add(new JLabel("Teléfono:"), c);
+        c.gridx = 1;
+        form.add(txtTelefono, c);
+
+        c.gridx = 0;
+        c.gridy = 7;
+        form.add(new JLabel("Correo:"), c);
+        c.gridx = 1;
+        form.add(txtCorreo, c);
 
         // ===== Botones =====
         JPanel botones = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
