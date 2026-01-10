@@ -97,12 +97,12 @@ public class GestionUsuariosView extends JFrame {
         // --- SECCIÓN 1: DATOS PERSONALES ---
         addSeparator(form, "Datos Personales", 0);
 
-        c.gridy = 1; c.gridx = 0; form.add(new JLabel("Nombre:"), c);
+        c.gridy = 1; c.gridx = 0; form.add(new JLabel("Nombres:"), c);
         c.gridx = 1; 
         txtNombre = new JTextField(15);
         form.add(txtNombre, c);
 
-        c.gridy = 2; c.gridx = 0; form.add(new JLabel("Apellido:"), c);
+        c.gridy = 2; c.gridx = 0; form.add(new JLabel("Apellidos:"), c);
         c.gridx = 1; 
         txtApellido = new JTextField(15);
         form.add(txtApellido, c);
@@ -362,7 +362,7 @@ public class GestionUsuariosView extends JFrame {
         
         if (JOptionPane.showConfirmDialog(this, "¿Eliminar usuario ID " + id + "?", "Confirmar", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
             if (controller.eliminarUsuario(id)) {
-                JOptionPane.showMessageDialog(this, "Eliminado.");
+                JOptionPane.showMessageDialog(this, "Usuario Eliminado Exitosamente.");
                 cargarTabla();
                 limpiarFormulario();
             }

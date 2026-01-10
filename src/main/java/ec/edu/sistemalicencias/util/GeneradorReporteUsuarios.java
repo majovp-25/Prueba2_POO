@@ -36,12 +36,19 @@ public class GeneradorReporteUsuarios {
             PdfPCell cellLogo = new PdfPCell();
             cellLogo.setBorder(Rectangle.NO_BORDER);
             try {
-                String rutaImagen = "C:\\Users\\User\\Pictures\\ANT\\ImagenANT.jpg"; 
-                Image logo = Image.getInstance(rutaImagen);
-                logo.scaleToFit(80, 80);
-                cellLogo.addElement(logo);
+                java.net.URL urlImagen = GeneradorReporteUsuarios.class.getResource("/images/ImagenANT.jpg");
+                
+                if (urlImagen != null) {
+                    Image logo = Image.getInstance(urlImagen);
+                    logo.scaleToFit(80, 80);
+                    cellLogo.addElement(logo);
+                } else {
+                    cellLogo.addElement(new Phrase("ANT (Sin Logo)"));
+                }
+                
             } catch (Exception e) {
-                cellLogo.addElement(new Phrase("ANT")); 
+                cellLogo.addElement(new Phrase("ANT"));
+                System.err.println("Error cargando logo: " + e.getMessage());
             }
             headerTable.addCell(cellLogo);
 
@@ -147,7 +154,7 @@ public class GeneradorReporteUsuarios {
     }
 
     private static void agregarCelda(PdfPTable tabla, String texto, Font fuente, BaseColor fondo) {
-        PdfPCell celda = new PdfPCell(new Phrase(texto != null ? texto : "-", fuente)); // Pone un guion si es null
+        PdfPCell celda = new PdfPCell(new Phrase(texto != null ? texto : "-", fuente));
         celda.setPadding(5);
         celda.setBackgroundColor(fondo);
         celda.setVerticalAlignment(Element.ALIGN_MIDDLE);

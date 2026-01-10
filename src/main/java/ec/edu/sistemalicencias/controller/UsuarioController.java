@@ -19,7 +19,11 @@ public class UsuarioController {
 
 public Usuario crearUsuario(String username, String password, String rol, 
                                 String nombre, String apellido, String telefono, String email, 
-                                String creador) { // <--- FALTABA AGREGAR ESTO AQUÍ
+                                String creador) {
+                                    String error = dao.verificarDuplicados(username, email, telefono);
+        if (error != null) {
+            throw new RuntimeException(error); 
+        }
         Usuario u = new Usuario();
         u.setUsername(username);
         u.setPassword(password);
@@ -29,7 +33,6 @@ public Usuario crearUsuario(String username, String password, String rol,
         u.setTelefono(telefono);
         u.setEmail(email);
         u.setCreadoPor(creador);
-
         return dao.create(u);
     }
 
@@ -45,7 +48,7 @@ public Usuario crearUsuario(String username, String password, String rol,
 
     // ===== MÉTODO NUEVO CRUD ampliado (CORREGIDO) =====
     public boolean actualizarUsuario(int id, String username, String password, String rol,
-                                     String nombre, String apellido, String telefono, String correo) {
+                                    String nombre, String apellido, String telefono, String correo) {
 
         validarDatos(username, password, rol, nombre, apellido, telefono, correo);
 

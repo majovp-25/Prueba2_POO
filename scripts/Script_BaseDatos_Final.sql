@@ -12,15 +12,19 @@ DROP TABLE IF EXISTS usuarios CASCADE;
 
 -- 2. TABLA USUARIOS
 CREATE TABLE usuarios (
-    id SERIAL PRIMARY KEY,
-    nombres   VARCHAR(100) NOT NULL,
-    apellidos VARCHAR(100) NOT NULL,
-    telefono  VARCHAR(15),
-    email     VARCHAR(100) UNIQUE,
-    username  VARCHAR(50) NOT NULL UNIQUE,
-    password  VARCHAR(255) NOT NULL,
-    rol       VARCHAR(50) NOT NULL
-);
+                id SERIAL PRIMARY KEY,
+                nombres   VARCHAR(100) NOT NULL,
+                apellidos VARCHAR(100) NOT NULL,
+                
+                -- AHORA TODOS ESTOS SON UNIQUE
+                telefono  VARCHAR(15) UNIQUE, 
+                email     VARCHAR(100) UNIQUE,
+                username  VARCHAR(50) NOT NULL UNIQUE,
+                
+                password  VARCHAR(255) NOT NULL,
+                rol       VARCHAR(50) NOT NULL,
+                creado_por VARCHAR(50) DEFAULT 'Sistema'
+            );
 
 -- 3. TABLA CONDUCTORES
 CREATE TABLE conductores (

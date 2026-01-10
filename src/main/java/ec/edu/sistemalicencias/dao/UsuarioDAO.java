@@ -175,4 +175,32 @@ public class UsuarioDAO {
         }
     }
 
+    // Método para verificar duplicados
+    public String verificarDuplicados(String username, String email, String telefono) {
+        String sql = "SELECT username, email, telefono FROM usuarios WHERE username = ? OR email = ? OR telefono = ?";
+        
+        try (Connection cn = DatabaseConfig.getInstance().obtenerConexion();
+            PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setString(1, username);
+            ps.setString(2, email);
+            ps.setString(3, telefono);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String dbUser = rs.getString("username");
+                    String dbEmail = rs.getString("email");
+                    String dbTelf = rs.getString("telefono");
+
+                    if (dbUser.equalsIgnoreCase(username)) return "El Usuario '" + username + "' ya existe.";
+                    if (dbEmail.equalsIgnoreCase(email)) return "El Correo '" + email + "' ya está registrado.";
+                    if (dbTelf.equals(telefono)) return "El Teléfono '" + telefono + "' ya está registrado.";
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null; 
+    }
 }
+
+

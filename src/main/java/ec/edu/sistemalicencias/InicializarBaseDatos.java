@@ -7,16 +7,17 @@ import java.sql.Statement;
 public class InicializarBaseDatos {
 
     public static void main(String[] args) {
-        System.out.println("☢️ REINICIANDO BASE DE DATOS MAESTRA (V3.0 - CON MAJO Y JUAN)...");
+        System.out.println("☢️ REINICIANDO BASE DE DATOS MAESTRA (V4.0 - FINAL)...");
+        System.out.println("⚠️ ADVERTENCIA: Se borrarán todos los datos existentes.");
 
         String sql = """
-            -- 1. LIMPIEZA TOTAL (Orden correcto para no romper relaciones)
+            -- 1. LIMPIEZA TOTAL
             DROP TABLE IF EXISTS licencias CASCADE;
             DROP TABLE IF EXISTS pruebas_psicometricas CASCADE;
             DROP TABLE IF EXISTS conductores CASCADE;
             DROP TABLE IF EXISTS usuarios CASCADE;
 
-            -- 2. TABLA USUARIOS (NUEVA ESTRUCTURA)
+            -- 2. TABLA USUARIOS (ACTUALIZADA CON AUDITORÍA)
             CREATE TABLE usuarios (
                 id SERIAL PRIMARY KEY,
                 nombres   VARCHAR(100) NOT NULL,
@@ -25,7 +26,8 @@ public class InicializarBaseDatos {
                 email     VARCHAR(100) UNIQUE,
                 username  VARCHAR(50) NOT NULL UNIQUE,
                 password  VARCHAR(255) NOT NULL,
-                rol       VARCHAR(50) NOT NULL
+                rol       VARCHAR(50) NOT NULL,
+                creado_por VARCHAR(50) DEFAULT 'Sistema' -- <--- ¡AQUÍ ESTÁ LA MAGIA!
             );
 
             -- 3. TABLA CONDUCTORES
@@ -72,20 +74,23 @@ public class InicializarBaseDatos {
                 CONSTRAINT fk_conductor FOREIGN KEY (conductor_id) REFERENCES conductores(id)
             );
 
-            -- 6. DATOS BASE
-            INSERT INTO usuarios (username, password, rol, nombres, apellidos, telefono, email)
-            VALUES ('admin', '1234', 'Administrador', 'María José', 'Paredes', '0968830302', 'mariaparedes@gmail.com');
+            -- 6. DATOS BASE (CON CONTRASEÑA CORRECTA Y CAMPO CREADO_POR)
+            -- Admin
+            INSERT INTO usuarios (username, password, rol, nombres, apellidos, telefono, email, creado_por)
+            VALUES ('admin', 'Sist.1234!', 'Administrador', 'María José', 'Paredes', '0968830302', 'mariaparedes@gmail.com', 'Sistema');
                 
-            INSERT INTO usuarios (username, password, rol, nombres, apellidos, telefono, email)
-            VALUES ('analista1', '1234', 'Analista', 'Juan', 'Vasquez', '0963218871', 'juanvasquez@gmail.com');
+            -- Analista
+            INSERT INTO usuarios (username, password, rol, nombres, apellidos, telefono, email, creado_por)
+            VALUES ('analista1', 'Sist.1234!', 'Analista', 'Juan', 'Vasquez', '0963218871', 'juanvasquez@gmail.com', 'Sistema');
         """;
 
         try (Connection conn = DatabaseConfig.getInstance().obtenerConexion();
             Statement stmt = conn.createStatement()) {
 
             stmt.executeUpdate(sql);
-            System.out.println("✅ ¡BASE DE DATOS LISTA PARA PRODUCCIÓN!");
-            System.out.println("✅ Usuarios 'admin' (Majo) y 'analista1' (Juan) creados.");
+            System.out.println("✅ ¡BASE DE DATOS REINICIADA Y ACTUALIZADA!");
+            System.out.println("✅ Estructura correcta (incluye 'creado_por').");
+            System.out.println("✅ Usuarios 'admin' y 'analista1' reseteados con password 'Sist.1234!'.");
 
         } catch (Exception e) {
             System.err.println("❌ Error: " + e.getMessage());
