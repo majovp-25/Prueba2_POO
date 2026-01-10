@@ -81,7 +81,7 @@ public class InicializarBaseDatos {
         """;
 
         try (Connection conn = DatabaseConfig.getInstance().obtenerConexion();
-             Statement stmt = conn.createStatement()) {
+            Statement stmt = conn.createStatement()) {
 
             stmt.executeUpdate(sql);
             System.out.println("✅ ¡BASE DE DATOS LISTA PARA PRODUCCIÓN!");

@@ -72,3 +72,9 @@ VALUES ('admin', '1234', 'Administrador', 'María José', 'Paredes', '0968830302
 
 INSERT INTO usuarios (username, password, rol, nombres, apellidos, telefono, email)
 VALUES ('analista1', '1234', 'Analista', 'Juan', 'Vasquez', '0963218871', 'juanvasquez@gmail.com');
+
+-- 1. Crear la columna nueva
+ALTER TABLE usuarios ADD COLUMN creado_por VARCHAR(50);
+
+-- 2. Ponerle un valor por defecto a los que ya existen (para que no salga NULL)
+UPDATE usuarios SET creado_por = 'Sistema' WHERE creado_por IS NULL;

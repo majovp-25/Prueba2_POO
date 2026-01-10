@@ -17,36 +17,18 @@ public class UsuarioController {
         return dao.findAll();
     }
 
-    // ===== MÉTODO ORIGINAL (se mantiene) =====
-    public Usuario crearUsuario(String username, String password, String rol) {
+public Usuario crearUsuario(String username, String password, String rol, 
+                                String nombre, String apellido, String telefono, String email, 
+                                String creador) { // <--- FALTABA AGREGAR ESTO AQUÍ
         Usuario u = new Usuario();
-        u.setId(0);
         u.setUsername(username);
         u.setPassword(password);
         u.setRol(rol);
-        // OJO: aquí NO se setean nombres/apellidos/etc. (si tu BD los exige NOT NULL, este método no debe usarse)
-        return dao.create(u);
-    }
-
-    // ===== MÉTODO NUEVO CRUD ampliado (CORREGIDO) =====
-    public Usuario crearUsuario(String username, String password, String rol,
-                                String nombre, String apellido, String telefono, String correo) {
-
-        validarDatos(username, password, rol, nombre, apellido, telefono, correo);
-
-        Usuario u = new Usuario();
-        u.setId(0);
-
-        // Campos personales
         u.setNombre(nombre);
         u.setApellido(apellido);
         u.setTelefono(telefono);
-        u.setEmail(correo);
-
-        // Credenciales
-        u.setUsername(username);
-        u.setPassword(password);
-        u.setRol(rol);
+        u.setEmail(email);
+        u.setCreadoPor(creador);
 
         return dao.create(u);
     }

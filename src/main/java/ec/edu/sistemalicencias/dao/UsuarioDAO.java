@@ -21,7 +21,7 @@ public class UsuarioDAO {
                 "FROM usuarios WHERE username = ? AND password = ?";
 
         try (Connection conn = DatabaseConfig.getInstance().obtenerConexion();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, username);
             stmt.setString(2, password);
@@ -53,12 +53,12 @@ public class UsuarioDAO {
         List<Usuario> lista = new ArrayList<>();
 
         // Selecciona columnas explícitas y mapea por nombre (evita orden incorrecto)
-        String sql = "SELECT id, nombres, apellidos, telefono, email, username, password, rol " +
+        String sql = "SELECT id, nombres, apellidos, telefono, email, username, password, rol, creado_por " +
                 "FROM usuarios ORDER BY id";
 
         try (Connection cn = DatabaseConfig.getInstance().obtenerConexion();
-             PreparedStatement ps = cn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+            PreparedStatement ps = cn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Usuario u = new Usuario();
@@ -70,6 +70,8 @@ public class UsuarioDAO {
                 u.setUsername(rs.getString("username"));
                 u.setPassword(rs.getString("password"));
                 u.setRol(rs.getString("rol"));
+                String creador = rs.getString("creado_por");
+                u.setCreadoPor(creador != null ? creador : "-");
                 lista.add(u);
             }
 
@@ -83,11 +85,11 @@ public class UsuarioDAO {
     }
 
     public Usuario create(Usuario u) {
-        String sql = "INSERT INTO usuarios (username, password, rol, nombres, apellidos, telefono, email) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id";
+        String sql = "INSERT INTO usuarios (username, password, rol, nombres, apellidos, telefono, email, creado_por) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
 
         try (Connection cn = DatabaseConfig.getInstance().obtenerConexion();
-             PreparedStatement ps = cn.prepareStatement(sql)) {
+            PreparedStatement ps = cn.prepareStatement(sql)) {
 
             ps.setString(1, u.getUsername());
             ps.setString(2, u.getPassword());
@@ -96,6 +98,7 @@ public class UsuarioDAO {
             ps.setString(5, u.getApellido());
             ps.setString(6, u.getTelefono());
             ps.setString(7, u.getEmail());
+            ps.setString(8, u.getCreadoPor());
 
             try (ResultSet keys = ps.executeQuery()) {
                 if (keys.next()) {
@@ -118,7 +121,7 @@ public class UsuarioDAO {
                 "WHERE id = ?";
 
         try (Connection cn = DatabaseConfig.getInstance().obtenerConexion();
-             PreparedStatement ps = cn.prepareStatement(sql)) {
+            PreparedStatement ps = cn.prepareStatement(sql)) {
 
             ps.setString(1, u.getUsername());
             ps.setString(2, u.getPassword());
@@ -142,7 +145,7 @@ public class UsuarioDAO {
         String sql = "DELETE FROM usuarios WHERE id = ?";
 
         try (Connection cn = DatabaseConfig.getInstance().obtenerConexion();
-             PreparedStatement ps = cn.prepareStatement(sql)) {
+            PreparedStatement ps = cn.prepareStatement(sql)) {
 
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;
@@ -153,4 +156,23 @@ public class UsuarioDAO {
             throw new RuntimeException("Error eliminando usuario: " + e.getMessage(), e);
         }
     }
+
+    public boolean actualizarPassword(int id, String nuevaPassword) {
+        String sql = "UPDATE usuarios SET password = ? WHERE id = ?";
+
+        try (Connection cn = DatabaseConfig.getInstance().obtenerConexion();
+            PreparedStatement ps = cn.prepareStatement(sql)) {
+
+            ps.setString(1, nuevaPassword);
+            ps.setInt(2, id);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (BaseDatosException e) {
+            throw new RuntimeException("Error cambiando password: " + e.getMessage(), e);
+        } catch (SQLException e) {
+            throw new RuntimeException("Error cambiando password: " + e.getMessage(), e);
+        }
+    }
+
 }

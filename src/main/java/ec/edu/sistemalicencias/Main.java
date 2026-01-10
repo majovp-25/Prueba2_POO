@@ -51,6 +51,37 @@ public class Main {
                     loginView.clearFields();
                     return;
                 }
+                // =======================================================
+                // NUEVA LÓGICA: Verificar si usa la contraseña por defecto
+                // =======================================================
+                if (password.equals("Sist.1234!")) {
+                    
+                    // 1. Pedimos la nueva contraseña usando el método que creamos en LoginView
+                    String nuevaPass = loginView.solicitarNuevaContrasena();
+
+                    // 2. Si cancela o lo deja vacío, no lo dejamos entrar
+                    if (nuevaPass == null || nuevaPass.trim().isEmpty()) {
+                        loginView.showError("Debe cambiar la contraseña para poder ingresar.");
+                        return;
+                    }
+                    boolean tieneMayuscula = nuevaPass.matches(".*[A-Z].*");
+                    boolean tieneNumero = nuevaPass.matches(".*\\d.*");
+                    boolean tieneEspecial = nuevaPass.matches(".*[^A-Za-z0-9].*");
+
+                    if (!tieneMayuscula || !tieneNumero || !tieneEspecial) {
+                        loginView.showError("❌ Contraseña insegura.\n\nDebe contener al menos:\n- Una letra MAYÚSCULA\n- Un NÚMERO\n- Un carácter ESPECIAL (.,-!@#$)\n\nInténtelo de nuevo.");
+                        return;
+                    }
+                    boolean actualizo = dao.actualizarPassword(usuario.getId(), nuevaPass);
+                    if (!actualizo) {
+                        loginView.showError("Error al actualizar la contraseña en la base de datos.");
+                        return;
+                    }
+                    JOptionPane.showMessageDialog(loginView, "✅ Contraseña actualizada correctamente.\nBienvenido al sistema.");
+                }
+                // =======================================================
+                // FIN NUEVA LÓGICA
+                // =======================================================
 
                 String rol = usuario.getRol();
 
@@ -61,6 +92,3 @@ public class Main {
         });
     }
 }
-
-
-

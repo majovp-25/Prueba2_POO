@@ -2,7 +2,7 @@ package ec.edu.sistemalicencias.model;
 
 public class Usuario {
     private int id;
-
+    private String creadoPor;
     private String nombre;
     private String apellido;
     private String telefono;
@@ -24,7 +24,7 @@ public class Usuario {
 
     // Constructor nuevo (el que tu DAO usa en findAll)
     public Usuario(int id, String nombre, String apellido, String telefono, String email,
-                   String username, String password, String rol) {
+        String username, String password, String rol) {
         this.id = id;
         this.nombre = nombre;
         this.apellido = apellido;
@@ -59,5 +59,8 @@ public class Usuario {
 
     public String getRol() { return rol; }
     public void setRol(String rol) { this.rol = rol; }
+
+    public String getCreadoPor() { return creadoPor; }
+    public void setCreadoPor(String creadoPor) { this.creadoPor = creadoPor; }
 }
 

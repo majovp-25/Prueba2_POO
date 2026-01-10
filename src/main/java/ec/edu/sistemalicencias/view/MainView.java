@@ -33,6 +33,7 @@ public class MainView extends JFrame {
 
     // Controlador del sistema
     private final LicenciaController controller;
+    private Usuario usuarioActual;
 
     // Componentes de la interfaz
     private JPanel mainPanel;
@@ -51,6 +52,7 @@ public class MainView extends JFrame {
      */
     public MainView(Usuario usuarioLogueado) {
         this.controller = new LicenciaController();
+        this.usuarioActual = usuarioLogueado;
 
         // Inicializar componentes programáticamente
         inicializarComponentes();
@@ -186,7 +188,9 @@ public class MainView extends JFrame {
         btnGenerarDocumento.addActionListener(e -> generarDocumentoPDF());
 
         // Botón Gestión de Usuarios
-        btnGestionUsuarios.addActionListener(e -> abrirGestionUsuarios());
+        btnGestionUsuarios.addActionListener(e -> {
+        new GestionUsuariosView(usuarioActual.getUsername()).setVisible(true);
+    });
 
         // Botón Salir
         btnSalir.addActionListener(e -> cerrarSesion());
@@ -245,7 +249,8 @@ public class MainView extends JFrame {
 
     private void abrirGestionUsuarios() {
         try {
-            GestionUsuariosView usuariosView = new GestionUsuariosView();
+            String username = (usuarioActual != null) ? usuarioActual.getUsername() : "Admin";
+            GestionUsuariosView usuariosView = new GestionUsuariosView(username);
             usuariosView.setVisible(true);
         } catch (Exception ex) {
             mostrarError("Error al abrir Gestión de Usuarios: " + ex.getMessage());
