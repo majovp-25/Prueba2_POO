@@ -82,7 +82,6 @@ public class LoginView extends JFrame {
         btnIngresar.setPreferredSize(new Dimension(110, 34));
         btnSalir.setPreferredSize(new Dimension(90, 34));
 
-        // Agregando componentes
         c.gridx = 0; c.gridy = 0; c.gridwidth = 2;
         panel.add(lblTitulo, c);
 
@@ -135,10 +134,10 @@ public class LoginView extends JFrame {
         txtUsername.requestFocus();
     }
 
-    // --- NUEVO MÉTODO PARA PEDIR CAMBIO DE CONTRASEÑA ---
+    // --- NUEVO METODO PARA PEDIR CAMBIO DE CONTRASEÑA ---
     public String solicitarNuevaContrasena() {
         JPanel panel = new JPanel(new GridLayout(2, 1));
-        panel.add(new JLabel("⚠️ Es su primer ingreso (o usa clave por defecto)."));
+        panel.add(new JLabel("⚠ Es su primer ingreso (o usa clave por defecto)."));
         panel.add(new JLabel("Por seguridad, ingrese una nueva contraseña:"));
         
         JPasswordField pf = new JPasswordField();

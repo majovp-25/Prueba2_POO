@@ -7,8 +7,8 @@ import java.sql.Statement;
 public class InicializarBaseDatos {
 
     public static void main(String[] args) {
-        System.out.println("☢️ REINICIANDO BASE DE DATOS MAESTRA (V4.0 - FINAL)...");
-        System.out.println("⚠️ ADVERTENCIA: Se borrarán todos los datos existentes.");
+        System.out.println("REINICIANDO BASE DE DATOS MAESTRA (V4.0 - FINAL)...");
+        System.out.println("ADVERTENCIA: Se borrarán todos los datos existentes.");
 
         String sql = """
             -- 1. LIMPIEZA TOTAL

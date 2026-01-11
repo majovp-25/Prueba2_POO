@@ -25,14 +25,10 @@ public class GeneradorReporteUsuarios {
             PdfWriter.getInstance(documento, new FileOutputStream(rutaDestino));
             documento.open();
 
-            // ==========================================
-            // 1. ENCABEZADO CON LOGO Y TEXTO
-            // ==========================================
             PdfPTable headerTable = new PdfPTable(2);
             headerTable.setWidthPercentage(100);
             headerTable.setWidths(new float[]{1f, 4f}); 
 
-            // --- COLUMNA 1: EL LOGO ---
             PdfPCell cellLogo = new PdfPCell();
             cellLogo.setBorder(Rectangle.NO_BORDER);
             try {
@@ -52,7 +48,6 @@ public class GeneradorReporteUsuarios {
             }
             headerTable.addCell(cellLogo);
 
-            // --- COLUMNA 2: INFO ---
             PdfPCell cellText = new PdfPCell();
             cellText.setBorder(Rectangle.NO_BORDER);
             cellText.setVerticalAlignment(Element.ALIGN_MIDDLE);
@@ -81,12 +76,10 @@ public class GeneradorReporteUsuarios {
             documento.add(new LineSeparator()); 
             documento.add(Chunk.NEWLINE);
 
-            // ==========================================
-            // 2. TABLA DE DATOS (AHORA CON 8 COLUMNAS)
-            // ==========================================
-            PdfPTable tabla = new PdfPTable(8); // <--- CAMBIO A 8
+            //Tabla con 8 columnas
+            PdfPTable tabla = new PdfPTable(8);
             tabla.setWidthPercentage(100);
-            
+
             // Ajustamos anchos para que quepa la nueva columna
             float[] anchos = {1f, 2f, 2f, 3f, 3f, 2.5f, 4f, 2.5f}; 
             tabla.setWidths(anchos);
@@ -121,12 +114,10 @@ public class GeneradorReporteUsuarios {
                 agregarCelda(tabla, u.getCreadoPor(), fontData, colorFondo);
 
                 filaGris = !filaGris;
-            } 
-            // --- EL BUCLE TERMINA AQUÍ ---
+            }
 
             documento.add(tabla);
 
-            // Total
             documento.add(Chunk.NEWLINE);
             Paragraph total = new Paragraph("Total de registros: " + listaUsuarios.size());
             total.setAlignment(Element.ALIGN_RIGHT);
@@ -134,9 +125,9 @@ public class GeneradorReporteUsuarios {
 
             documento.close();
 
-            // 3. Confirmación
+
             int resp = JOptionPane.showConfirmDialog(null,
-                    "✅ Reporte guardado en:\n" + rutaDestino + "\n\n¿Deseas abrirlo ahora?",
+                    "Reporte guardado en:\n" + rutaDestino + "\n\n¿Deseas abrirlo ahora?",
                     "Éxito", JOptionPane.YES_NO_OPTION);
 
             if (resp == JOptionPane.YES_OPTION) {

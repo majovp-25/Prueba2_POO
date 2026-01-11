@@ -18,19 +18,19 @@ public class GeneradorPDF {
     // Método principal: Recibe la lista de usuarios y el nombre del archivo a crear
     public void generarReporte(List<Usuario> listaUsuarios, String nombreArchivo) {
         
-        // 1. Creamos la "hoja de papel" (Documento)
+        // Creamos la "hoja de papel" (Documento)
         Document documento = new Document();
 
         try {
-            // 2. Preparamos el "escritor". Le decimos:
+            // Preparamos el "escritor". Le decimos:
             // "Usa este documento y guárdalo en esta ruta (nombreArchivo)"
             PdfWriter.getInstance(documento, new FileOutputStream(nombreArchivo));
 
-            // 3. Abrimos el documento para empezar a editar
+            // Abrimos el documento para empezar a editar
             // (Si no haces esto, te dará error al intentar escribir)
             documento.open();
 
-            // 4. Agregamos el Título
+            // Agregamos el Título
             Paragraph titulo = new Paragraph("Reporte de Usuarios del Sistema");
             titulo.setAlignment(Paragraph.ALIGN_CENTER); // Lo centramos
             documento.add(titulo);
@@ -38,16 +38,16 @@ public class GeneradorPDF {
             // Agregamos un espacio en blanco para que no se pegue la tabla al título
             documento.add(new Paragraph(" ")); 
 
-            // 5. Creamos la Tabla
+            // Creamos la Tabla
             // El número '3' indica que tendrá 3 columnas (ID, Usuario, Rol)
             PdfPTable tabla = new PdfPTable(3);
             
-            // 6. Ponemos los Encabezados (La primera fila)
+            // Ponemos los Encabezados (La primera fila)
             tabla.addCell("ID");
             tabla.addCell("Usuario");
             tabla.addCell("Rol");
 
-            // 7. Llenamos la tabla con los datos reales
+            // Llenamos la tabla con los datos reales
             // Recorremos la lista que nos enviaron
             for (Usuario u : listaUsuarios) {
                 tabla.addCell(String.valueOf(u.getId())); // Convertimos el número a texto
@@ -55,11 +55,11 @@ public class GeneradorPDF {
                 tabla.addCell(u.getRol());
             }
 
-            // 8. Agregamos la tabla llena al documento
+            // Agregamos la tabla llena al documento
             documento.add(tabla);
 
-            // 9. Cerramos el documento. 
-            // ¡IMPORTANTE! Si no cierras, el PDF queda corrupto (0 bytes).
+            // Cerramos el documento.
+            // ¡IMPORTANTE! Si no cierras, el PDF queda corrupto
             documento.close();
             
             System.out.println("--- PDF Generado correctamente: " + nombreArchivo + " ---");

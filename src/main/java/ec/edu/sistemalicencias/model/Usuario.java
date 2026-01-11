@@ -22,7 +22,7 @@ public class Usuario {
         this.rol = rol;
     }
 
-    // Constructor nuevo (el que tu DAO usa en findAll)
+    // Constructor nuevo (el que el DAO usa en findAll)
     public Usuario(int id, String nombre, String apellido, String telefono, String email,
         String username, String password, String rol) {
         this.id = id;

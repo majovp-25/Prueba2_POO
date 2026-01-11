@@ -45,9 +45,9 @@ public class MainView extends JFrame {
     private JButton btnGenerarDocumento;
     private JButton btnSalir;
     private JButton btnGestionUsuarios;
-    private JPanel panelModulos; //para ajustar visibilidad de botones según rol
+    private JPanel panelModulos;
 
-    private Component centerOriginal; // para restaurar el CENTER original
+    private Component centerOriginal;
 
 
 
@@ -140,9 +140,7 @@ public class MainView extends JFrame {
         panelModulos.add(btnGenerarDocumento);
         panelModulos.add(btnGestionUsuarios);
         panelModulos.add(btnSalir);
-        //panelModulos.add(new JLabel()); // Celda vacía para balancear
 
-        // === Panel de Pie de Página ===
         JPanel panelPie = new JPanel();
         panelPie.setBorder(new EmptyBorder(10, 0, 0, 0));
 
@@ -151,7 +149,6 @@ public class MainView extends JFrame {
         lblVersion.setForeground(Color.GRAY);
         panelPie.add(lblVersion);
 
-        // Agregar paneles al panel principal
         mainPanel.add(panelEncabezado, BorderLayout.NORTH);
         mainPanel.add(panelModulos, BorderLayout.CENTER);
         mainPanel.add(panelPie, BorderLayout.SOUTH);
@@ -215,8 +212,7 @@ public class MainView extends JFrame {
         );
 
         if (opcion == JOptionPane.YES_OPTION) {
-            dispose(); // cerrar la ventana principal
-            // volver a mostrar el login
+            dispose();
             Main.mostrarLogin();
         }
     }
@@ -226,7 +222,6 @@ public class MainView extends JFrame {
      * Configura los estilos adicionales de los componentes
      */
     private void configurarEstilos() {
-        // Estilo del botón de salir (color rojo)
         btnSalir.setBackground(new Color(220, 53, 69));
         btnSalir.setForeground(Color.WHITE);
         btnSalir.setOpaque(true);
