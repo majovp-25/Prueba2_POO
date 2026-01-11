@@ -1,6 +1,5 @@
 package ec.edu.sistemalicencias.view;
 
-import com.intellij.uiDesigner.core.GridLayoutManager;
 import ec.edu.sistemalicencias.controller.UsuarioController;
 import ec.edu.sistemalicencias.model.Usuario;
 
@@ -171,6 +170,26 @@ public class GestionUsuariosView extends JFrame {
         panelBotones.add(btnRefrescar);
         panelBotones.add(btnImprimir);
         panelBotones.add(btnCerrar);
+
+        //Colores de botones
+        Color azulBorde = new Color(0, 102, 204); // Azul similar al que ya usas en títulos
+
+        JButton[] botones = {btnGuardar, btnEditar, btnEliminar, btnRefrescar, btnImprimir, btnCerrar};
+
+        for (JButton b : botones) {
+            b.setBackground(UIManager.getColor("Button.background"));
+            b.setForeground(UIManager.getColor("Button.foreground"));
+            b.setOpaque(true);
+            b.setContentAreaFilled(true);
+
+            // Borde azul (1.5px aproximado con 2px)
+            b.setBorder(BorderFactory.createLineBorder(azulBorde, 2, true));
+
+            b.setFocusPainted(false);
+        }
+
+
+
 
         // Agregamos el formulario al panel derecho (con BorderLayout.NORTH para que no se estire feo)
         JPanel formContainer = new JPanel(new BorderLayout());
