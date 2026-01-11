@@ -69,7 +69,7 @@ public class Main {
                     boolean tieneEspecial = nuevaPass.matches(".*[^A-Za-z0-9].*");
 
                     if (!tieneMayuscula || !tieneNumero || !tieneEspecial) {
-                        loginView.showError("❌ Contraseña insegura.\n\nDebe contener al menos:\n- Una letra MAYÚSCULA\n- Un NÚMERO\n- Un carácter ESPECIAL (.,-!@#$)\n\nInténtelo de nuevo.");
+                        loginView.showError("Contraseña insegura.\n\nDebe contener al menos:\n- Una letra MAYÚSCULA\n- Un NÚMERO\n- Un carácter ESPECIAL (.,-!@#$)\n\nInténtelo de nuevo.");
                         return;
                     }
                     boolean actualizo = dao.actualizarPassword(usuario.getId(), nuevaPass);
@@ -77,7 +77,7 @@ public class Main {
                         loginView.showError("Error al actualizar la contraseña en la base de datos.");
                         return;
                     }
-                    JOptionPane.showMessageDialog(loginView, "✅ Contraseña actualizada correctamente.\nBienvenido al sistema.");
+                    JOptionPane.showMessageDialog(loginView, " Contraseña actualizada correctamente.\nBienvenido al sistema.");
                 }
                 // =======================================================
                 // FIN NUEVA LÓGICA

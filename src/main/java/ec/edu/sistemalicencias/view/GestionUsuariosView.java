@@ -228,7 +228,7 @@ public class GestionUsuariosView extends JFrame {
         int row = tabla.getSelectedRow();
         if (row < 0 || row >= listaUsuariosActual.size()) return;
 
-        // 2. ¡AQUÍ ESTÁ EL TRUCO! Sacamos el objeto completo de la lista
+        // 2. Sacamos el objeto completo de la lista
         Usuario u = listaUsuariosActual.get(row);
 
         txtId.setText(String.valueOf(u.getId()));
@@ -305,8 +305,6 @@ public class GestionUsuariosView extends JFrame {
             return;
         }
 
-        // Aquí van tus validaciones de regex (nombreValido, etc.)
-        // Las omití por espacio, pero PUEDES PEGARLAS AQUÍ si las necesitas estrictas.
 
         try {
             Usuario creado = controller.crearUsuario(username, password, rol, nombre, apellido, telefono, correo, this.usuarioLogueadoUsername);

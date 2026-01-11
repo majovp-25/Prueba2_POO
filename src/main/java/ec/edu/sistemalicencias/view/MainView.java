@@ -45,6 +45,11 @@ public class MainView extends JFrame {
     private JButton btnGenerarDocumento;
     private JButton btnSalir;
     private JButton btnGestionUsuarios;
+    private JPanel panelModulos; //para ajustar visibilidad de botones según rol
+
+    private Component centerOriginal; // para restaurar el CENTER original
+
+
 
 
     /**
@@ -70,6 +75,7 @@ public class MainView extends JFrame {
             aplicarPermisosPorRol(usuarioLogueado.getRol());
         }
     }
+
 
     /**
      * Inicializa todos los componentes de la interfaz gráfica
@@ -100,7 +106,7 @@ public class MainView extends JFrame {
         panelEncabezado.add(lblSubtitulo);
 
         // === Panel de Módulos (Botones) ===
-        JPanel panelModulos = new JPanel();
+        panelModulos = new JPanel();
         panelModulos.setLayout(new GridLayout(4, 2, 15, 15));
         panelModulos.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(Color.GRAY),
@@ -150,6 +156,8 @@ public class MainView extends JFrame {
         mainPanel.add(panelModulos, BorderLayout.CENTER);
         mainPanel.add(panelPie, BorderLayout.SOUTH);
     }
+
+
 
     /**
      * Crea un botón con estilo uniforme
