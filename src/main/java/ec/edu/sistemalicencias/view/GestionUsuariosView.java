@@ -310,6 +310,10 @@ public class GestionUsuariosView extends JFrame {
             JOptionPane.showMessageDialog(this, "Nombre, Apellido, Teléfono y Correo son obligatorios.", "Validación", JOptionPane.WARNING_MESSAGE);
             return;
         }
+        if (!correo.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
+            JOptionPane.showMessageDialog(this, "El correo no es válido.\nDebe tener el formato: usuario@dominio.com", "Validación de Correo", JOptionPane.WARNING_MESSAGE);
+            return; 
+        }
         
         // 2. Intentar autogenerar credenciales si están vacías
         generarCredencialesSiVacio();
