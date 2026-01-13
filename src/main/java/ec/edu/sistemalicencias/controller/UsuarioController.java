@@ -2,109 +2,89 @@ package ec.edu.sistemalicencias.controller;
 
 import ec.edu.sistemalicencias.dao.UsuarioDAO;
 import ec.edu.sistemalicencias.model.Usuario;
+import org.mindrot.jbcrypt.BCrypt; // Requiere la dependencia en build.gradle
 
 import java.util.List;
 
 public class UsuarioController {
 
-    private final UsuarioDAO dao;
+    private final UsuarioDAO dao = new UsuarioDAO();
 
-    public UsuarioController() {
-        this.dao = new UsuarioDAO();
-    }
-
-    public List<Usuario> listarUsuarios() {
-        return dao.findAll();
-    }
-
-public Usuario crearUsuario(String username, String password, String rol, 
-                                String nombre, String apellido, String telefono, String email, 
-                                String creador) {
-                                    String error = dao.verificarDuplicados(username, email, telefono);
-        if (error != null) {
-            throw new RuntimeException(error); 
+    // LOGIN CON BCRYPT
+    public Usuario login(String username, String passwordPlana) {
+        Usuario u = dao.buscarPorUsername(username);
+        
+        if (u != null) {
+            if (BCrypt.checkpw(passwordPlana, u.getPassword())) {
+                if (!u.isActivo()) {
+                    throw new RuntimeException("ERROR: Usuario Inactivo.\nConsulte al Administrador Master.");
+                }
+                
+                return u; 
+            }
         }
+        return null; 
+    }
+
+    public List<Usuario> listar() {
+        return dao.listarTodos();
+    }
+
+    public Usuario crear(String cedula, String nom1, String nom2, String ape1, String ape2,
+                        String telf, String email, String pass, String rol, String creador) {
+        
+        // 1. Validaciones Fuertes
+        if (nom1.length() < 3 || ape1.length() < 3) throw new RuntimeException("Nombre/Apellido muy cortos.");
+        if (cedula.length() < 10) throw new RuntimeException("Cédula inválida.");
+        
+        // 2. Password Default y Encriptación
+        String passwordFinal = (pass == null || pass.isEmpty()) ? "Sist.1234!" : pass;
+        if (passwordFinal.length() < 5) throw new RuntimeException("Contraseña insegura.");
+        
+        // HASHEAR PASSWORD
+        String hashedPassword = BCrypt.hashpw(passwordFinal, BCrypt.gensalt());
+
+        // 3. Auto-Username (nom1[0] + ape1 + cedula[last4])
+        String suffix = cedula.length() > 4 ? cedula.substring(cedula.length() - 4) : "0000";
+        String autoUser = (nom1.substring(0,1) + ape1 + suffix).toLowerCase().replaceAll("\\s+", "");
+
+        // 4. Verificar Duplicados
+        String err = dao.verificarDuplicados(cedula, autoUser, email);
+        if (err != null) throw new RuntimeException(err);
+
         Usuario u = new Usuario();
-        u.setUsername(username);
-        u.setPassword(password);
-        u.setRol(rol);
-        u.setNombre(nombre);
-        u.setApellido(apellido);
-        u.setTelefono(telefono);
+        u.setCedula(cedula);
+        u.setPrimerNombre(nom1);
+        u.setSegundoNombre(nom2);
+        u.setPrimerApellido(ape1);
+        u.setSegundoApellido(ape2);
+        u.setTelefono(telf);
         u.setEmail(email);
+        u.setUsername(autoUser);
+        u.setPassword(hashedPassword); // Guardamos Hash
+        u.setRol(rol);
         u.setCreadoPor(creador);
-        return dao.create(u);
+        u.setActivo(true);
+
+        if (dao.crear(u)) return u;
+        throw new RuntimeException("No se pudo guardar.");
     }
 
-    // ===== MÉTODO ORIGINAL (se mantiene) =====
-    public boolean actualizarUsuario(int id, String username, String password, String rol) {
-        Usuario u = new Usuario();
-        u.setId(id);
-        u.setUsername(username);
-        u.setPassword(password);
-        u.setRol(rol);
-        return dao.update(u);
+    public boolean actualizar(Usuario u) {
+        return dao.actualizar(u);
     }
 
-    // ===== MÉTODO NUEVO CRUD ampliado (CORREGIDO) =====
-    public boolean actualizarUsuario(int id, String username, String password, String rol,
-                                    String nombre, String apellido, String telefono, String correo) {
-
-        validarDatos(username, password, rol, nombre, apellido, telefono, correo);
-
-        Usuario u = new Usuario();
-        u.setId(id);
-
-        // Campos personales
-        u.setNombre(nombre);
-        u.setApellido(apellido);
-        u.setTelefono(telefono);
-        u.setEmail(correo);
-
-        // Credenciales
-        u.setUsername(username);
-        u.setPassword(password);
-        u.setRol(rol);
-
-        return dao.update(u);
+    // Lógica para CAMBIAR ESTADO (Soft)
+    public boolean cambiarEstado(int id, boolean nuevoEstado) {
+        return dao.cambiarEstado(id, nuevoEstado);
     }
 
-    public boolean eliminarUsuario(int id) {
-        return dao.delete(id);
+    public boolean eliminarTotalmente(int id) {
+        return dao.eliminarFisico(id);
     }
 
-    // ===== VALIDACIONES =====
-    private void validarDatos(String username, String password, String rol,
-                              String nombre, String apellido, String telefono, String correo) {
-
-        if (username == null || username.trim().isEmpty()) {
-            throw new IllegalArgumentException("Username es obligatorio.");
-        }
-        if (password == null || password.trim().isEmpty()) {
-            throw new IllegalArgumentException("Password es obligatorio.");
-        }
-        if (rol == null || rol.trim().isEmpty()) {
-            throw new IllegalArgumentException("Rol es obligatorio.");
-        }
-
-        if (nombre == null || nombre.trim().isEmpty()) {
-            throw new IllegalArgumentException("Nombre es obligatorio.");
-        }
-        if (apellido == null || apellido.trim().isEmpty()) {
-            throw new IllegalArgumentException("Apellido es obligatorio.");
-        }
-
-        if (telefono == null || !telefono.trim().matches("\\d{7,15}")) {
-            throw new IllegalArgumentException("Teléfono inválido (solo números, 7 a 15 dígitos).");
-        }
-
-        if (correo == null || !correo.trim().matches("^[\\w._%+-]+@[\\w.-]+\\.[A-Za-z]{2,}$")) {
-            throw new IllegalArgumentException("Correo inválido.");
-        }
+    public boolean cambiarPassword(int id, String nuevaPassPlana) {
+        // El DAO se encarga de encriptarla con BCrypt
+        return dao.actualizarPassword(id, nuevaPassPlana);
     }
 }
-
-
-
-
-

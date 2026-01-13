@@ -1,15 +1,19 @@
 package ec.edu.sistemalicencias.view;
 
+import com.formdev.flatlaf.FlatClientProperties;
 import ec.edu.sistemalicencias.controller.UsuarioController;
 import ec.edu.sistemalicencias.model.Usuario;
+import ec.edu.sistemalicencias.util.GeneradorReporteUsuarios;
+import org.mindrot.jbcrypt.BCrypt;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 import java.util.List;
-import java.util.ArrayList; // Importante
 
 public class GestionUsuariosView extends JFrame {
 
@@ -18,33 +22,28 @@ public class GestionUsuariosView extends JFrame {
     private JTable tabla;
     private DefaultTableModel modelo;
 
-    // Campos de cuenta
-    private JTextField txtId;
-    private JTextField txtUsername;
+    // Campos
+    private JTextField txtCedula, txtPrimerNombre, txtSegundoNombre, txtPrimerApellido, txtSegundoApellido;
+    private JTextField txtTelefono, txtCorreo, txtId, txtUsername;
     private JPasswordField txtPassword;
     private JComboBox<String> cboRol;
+    private JCheckBox chkVerPass;
+    private JLabel lblEstadoActual;
 
-    // Campos personales
-    private JTextField txtNombre;
-    private JTextField txtApellido;
-    private JTextField txtTelefono;
-    private JTextField txtCorreo;
+    private JButton btnEstado;
 
-    private JButton btnGuardar;
-    private JButton btnEditar;
-    private JButton btnEliminar;
-    private JButton btnRefrescar;
-    private JButton btnCerrar;
-    private JButton btnImprimir;
+    private Usuario usuarioSeleccionado = null;
 
-    // --- IMPORTANTE: Lista para recordar los datos completos al dar clic en la tabla ---
-    private List<Usuario> listaUsuariosActual = new ArrayList<>();
+    // PALETA DE COLORES "ESTILO ANT" (Basado en tu captura)
+    private final Color ANT_RED = new Color(220, 53, 69);      // Rojo intenso (Botones de salida/borrar)
+    private final Color ANT_WHITE_BG = Color.WHITE;            // Fondo de botones normales
+    private final Color ANT_BORDER = new Color(200, 200, 200); // Borde sutil
+    private final Color ANT_TEXT = new Color(50, 50, 50);      // Texto oscuro
 
     public GestionUsuariosView(String usernameLogueado) {
         this.usuarioLogueadoUsername = usernameLogueado;
-
-        setTitle("Gestión de Usuarios - Sesión de: " + usernameLogueado);
-        setSize(900, 580);
+        setTitle("Administración de Usuarios - Sistema Nacional");
+        setSize(1250, 750);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
@@ -53,368 +52,428 @@ public class GestionUsuariosView extends JFrame {
     }
 
     private void initUI() {
-        JPanel root = new JPanel(new BorderLayout(10, 10));
-        root.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        root.setBackground(new Color(245, 247, 250));
+        JPanel mainPanel = new JPanel(new BorderLayout(15, 15));
+        mainPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
+        mainPanel.setBackground(new Color(245, 247, 250)); // Fondo gris muy suave
 
-        // =========================
-        // 1. TABLA (IZQUIERDA)
-        // =========================
-        modelo = new DefaultTableModel(new Object[]{"ID", "Username", "Rol"}, 0) {
+        // --- 1. HEADER ---
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setOpaque(false);
+        JLabel lblTitulo = new JLabel("Módulo de Gestión de Usuarios");
+        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblTitulo.setForeground(new Color(40, 55, 70)); // Azul oscuro casi negro
+        
+        JLabel lblSubtitulo = new JLabel("Sesión activa: " + usuarioLogueadoUsername);
+        lblSubtitulo.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+        lblSubtitulo.setForeground(Color.GRAY);
+
+        headerPanel.add(lblTitulo, BorderLayout.WEST);
+        headerPanel.add(lblSubtitulo, BorderLayout.EAST);
+        mainPanel.add(headerPanel, BorderLayout.NORTH);
+
+        // --- 2. TABLA (Izquierda) ---
+        modelo = new DefaultTableModel(new Object[]{"ID", "Cédula", "Nombres", "Rol", "Estado"}, 0) {
             @Override
-            public boolean isCellEditable(int row, int col) { return false; }
+            public boolean isCellEditable(int row, int column) { return false; }
         };
+
         tabla = new JTable(modelo);
-        tabla.setRowHeight(28);
-        tabla.setFillsViewportHeight(true);
-        tabla.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
-        tabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tabla.setRowHeight(32);
+        tabla.setShowVerticalLines(false);
+        tabla.setIntercellSpacing(new Dimension(0, 0));
+        tabla.setSelectionBackground(new Color(230, 240, 255));
+        tabla.setSelectionForeground(Color.BLACK);
+        tabla.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
+        tabla.getTableHeader().setBackground(Color.WHITE);
+        tabla.getTableHeader().setPreferredSize(new Dimension(0, 40));
 
-        JScrollPane scroll = new JScrollPane(tabla);
-        scroll.setBorder(BorderFactory.createTitledBorder("Lista de Usuarios"));
-        scroll.getViewport().setBackground(Color.WHITE);
-
-        // =========================
-        // 2. FORMULARIO (DERECHA)
-        // =========================
-        JPanel panelDerecho = new JPanel(new BorderLayout());
-        panelDerecho.setOpaque(false);
-
-        // Contenedor del formulario (usamos GridBag para control total)
-        JPanel form = new JPanel(new GridBagLayout());
-        form.setBackground(Color.WHITE);
-        form.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(200, 200, 200), 1, true),
-                BorderFactory.createEmptyBorder(15, 15, 15, 15)
-        ));
-
-        GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(5, 5, 5, 5);
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.anchor = GridBagConstraints.WEST;
-
-        // --- SECCIÓN 1: DATOS PERSONALES ---
-        addSeparator(form, "Datos Personales", 0);
-
-        c.gridy = 1; c.gridx = 0; form.add(new JLabel("Nombres:"), c);
-        c.gridx = 1; 
-        txtNombre = new JTextField(15);
-        form.add(txtNombre, c);
-
-        c.gridy = 2; c.gridx = 0; form.add(new JLabel("Apellidos:"), c);
-        c.gridx = 1; 
-        txtApellido = new JTextField(15);
-        form.add(txtApellido, c);
-
-        c.gridy = 3; c.gridx = 0; form.add(new JLabel("Teléfono:"), c);
-        c.gridx = 1; 
-        txtTelefono = new JTextField(15);
-        form.add(txtTelefono, c);
-
-        c.gridy = 4; c.gridx = 0; form.add(new JLabel("Correo:"), c);
-        c.gridx = 1; 
-        txtCorreo = new JTextField(15);
-        form.add(txtCorreo, c);
-
-        // --- SECCIÓN 2: CUENTA DE USUARIO ---
-        addSeparator(form, "Datos de Cuenta", 5);
-
-        c.gridy = 6; c.gridx = 0; form.add(new JLabel("ID:"), c);
-        c.gridx = 1; 
-        txtId = new JTextField();
-        txtId.setEnabled(false);
-        txtId.setBackground(new Color(240,240,240));
-        form.add(txtId, c);
-
-        c.gridy = 7; c.gridx = 0; form.add(new JLabel("Rol:"), c);
-        c.gridx = 1; 
-        cboRol = new JComboBox<>(new String[]{"Administrador", "Analista"});
-        form.add(cboRol, c);
-
-        c.gridy = 8; c.gridx = 0; form.add(new JLabel("Username:"), c);
-        c.gridx = 1; 
-        txtUsername = new JTextField(15);
-        txtUsername.setToolTipText("Dejar vacío para generar automáticamente");
-        form.add(txtUsername, c);
-
-        c.gridy = 9; c.gridx = 0; form.add(new JLabel("Password:"), c);
-        c.gridx = 1; 
-        txtPassword = new JPasswordField(15);
-        txtPassword.setToolTipText("Dejar vacío para contraseña por defecto (Sist.1234!)");
-        form.add(txtPassword, c);
-        
-        // Mensaje de ayuda pequeño
-        c.gridy = 10; c.gridx = 0; c.gridwidth = 2;
-        JLabel lblInfo = new JLabel("<html><font color='gray' size='2'>* Si deja Username/Pass vacíos, se generan solos.</font></html>");
-        form.add(lblInfo, c);
-
-
-        // =========================
-        // 3. BOTONES
-        // =========================
-        JPanel panelBotones = new JPanel(new GridLayout(2, 3, 5, 5)); // Rejilla de botones
-        panelBotones.setOpaque(false);
-        panelBotones.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
-
-        btnGuardar = new JButton("Guardar");
-        btnGuardar.setBackground(new Color(40, 167, 69)); 
-        btnEditar = new JButton("Editar");
-        btnEliminar = new JButton("Eliminar");
-        btnRefrescar = new JButton("Limpiar");
-        btnImprimir = new JButton("PDF");
-        btnCerrar = new JButton("Cerrar");
-
-        panelBotones.add(btnGuardar);
-        panelBotones.add(btnEditar);
-        panelBotones.add(btnEliminar);
-        panelBotones.add(btnRefrescar);
-        panelBotones.add(btnImprimir);
-        panelBotones.add(btnCerrar);
-
-        //Colores de botones
-        Color azulBorde = new Color(0, 102, 204); // Azul similar al que ya usas en títulos
-
-        JButton[] botones = {btnGuardar, btnEditar, btnEliminar, btnRefrescar, btnImprimir, btnCerrar};
-
-        for (JButton b : botones) {
-            b.setBackground(UIManager.getColor("Button.background"));
-            b.setForeground(UIManager.getColor("Button.foreground"));
-            b.setOpaque(true);
-            b.setContentAreaFilled(true);
-
-            // Borde azul (1.5px aproximado con 2px)
-            b.setBorder(BorderFactory.createLineBorder(azulBorde, 2, true));
-
-            b.setFocusPainted(false);
-        }
-
-
-
-
-        // Agregamos el formulario al panel derecho (con BorderLayout.NORTH para que no se estire feo)
-        JPanel formContainer = new JPanel(new BorderLayout());
-        formContainer.setOpaque(false);
-        formContainer.add(form, BorderLayout.NORTH);
-        
-        panelDerecho.add(formContainer, BorderLayout.CENTER);
-        panelDerecho.add(panelBotones, BorderLayout.SOUTH);
-
-        // Split Pane
-        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scroll, panelDerecho);
-        split.setResizeWeight(0.65); // 65% para la tabla
-        split.setOpaque(false);
-        split.setBorder(null);
-
-        root.add(split, BorderLayout.CENTER);
-        setContentPane(root);
-
-        // Eventos
-        tabla.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) cargarSeleccionEnFormulario();
+        // Renderizado de Estado (Texto Coloreado)
+        tabla.getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel c = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                c.setHorizontalAlignment(SwingConstants.CENTER);
+                String estado = (String) value;
+                if ("ACTIVO".equals(estado)) {
+                    c.setForeground(new Color(40, 167, 69)); // Verde
+                    c.setFont(c.getFont().deriveFont(Font.BOLD));
+                } else {
+                    c.setForeground(ANT_RED); // Rojo
+                }
+                return c;
+            }
         });
 
-        btnGuardar.addActionListener(e -> crearUsuario());
+        tabla.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) cargarFormularioDesdeTabla();
+        });
+
+        JScrollPane scrollTabla = new JScrollPane(tabla);
+        scrollTabla.setBorder(BorderFactory.createLineBorder(ANT_BORDER));
+        scrollTabla.getViewport().setBackground(Color.WHITE);
+        
+        // --- 3. FORMULARIO (Derecha) ---
+        JPanel rightPanel = new JPanel(new BorderLayout(0, 15));
+        rightPanel.setOpaque(false);
+        
+        // Tarjeta del Formulario
+        JPanel cardForm = new JPanel(new GridBagLayout());
+        cardForm.setBackground(Color.WHITE);
+        cardForm.setBorder(new EmptyBorder(20, 25, 20, 25));
+        // Efecto tarjeta: borde gris muy fino y redondeado
+        cardForm.putClientProperty(FlatClientProperties.STYLE, "arc: 12; border: 1,1,1,1, #dcdcdc");
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.WEST;
+
+        // === CAMPOS DEL FORMULARIO ===
+        addSectionTitle(cardForm, "Información Personal", 0, gbc);
+
+        // Fila 1
+        addField(cardForm, "Cédula *:", txtCedula = createStyledField(), 0, 1, gbc, 0.5);
+        addField(cardForm, "Teléfono:", txtTelefono = createStyledField(), 2, 1, gbc, 0.5);
+
+        // Fila 2 (Simetría)
+        addField(cardForm, "Primer Nombre *:", txtPrimerNombre = createStyledField(), 0, 2, gbc, 0.5);
+        addField(cardForm, "Segundo Nombre:", txtSegundoNombre = createStyledField(), 2, 2, gbc, 0.5);
+
+        // Fila 3 (Simetría)
+        addField(cardForm, "Primer Apellido *:", txtPrimerApellido = createStyledField(), 0, 3, gbc, 0.5);
+        addField(cardForm, "Segundo Apellido:", txtSegundoApellido = createStyledField(), 2, 3, gbc, 0.5);
+
+        // Fila 4
+        gbc.gridy = 4; gbc.gridx = 0; gbc.weightx = 0; cardForm.add(new JLabel("Correo:"), gbc);
+        gbc.gridx = 1; gbc.gridwidth = 3; txtCorreo = createStyledField(); cardForm.add(txtCorreo, gbc);
+        gbc.gridwidth = 1; 
+
+        addSectionTitle(cardForm, "Cuenta y Seguridad", 5, gbc);
+
+        // Fila 6
+        gbc.gridy = 6; gbc.gridx = 0; gbc.weightx = 0; cardForm.add(new JLabel("ID:"), gbc);
+        gbc.gridx = 1; txtId = createStyledField(); txtId.setEditable(false); txtId.setBackground(new Color(245, 245, 245)); cardForm.add(txtId, gbc);
+        
+        gbc.gridx = 2; cardForm.add(new JLabel("Estado:"), gbc);
+        gbc.gridx = 3; lblEstadoActual = new JLabel("---"); lblEstadoActual.setFont(new Font("Segoe UI", Font.BOLD, 13)); cardForm.add(lblEstadoActual, gbc);
+
+        // Fila 7
+        addField(cardForm, "Rol:", cboRol = new JComboBox<>(new String[]{"Administrador", "Analista"}), 0, 7, gbc, 0.5);
+        
+        // Fila 8
+        gbc.gridy = 8; gbc.gridx = 0; cardForm.add(new JLabel("Username:"), gbc);
+        gbc.gridx = 1; gbc.gridwidth = 3; txtUsername = createStyledField(); txtUsername.setEditable(false); 
+        txtUsername.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Generado automáticamente");
+        cardForm.add(txtUsername, gbc);
+        gbc.gridwidth = 1;
+
+        // Fila 9
+        gbc.gridy = 9; gbc.gridx = 0; cardForm.add(new JLabel("Contraseña:"), gbc);
+        gbc.gridx = 1; gbc.gridwidth = 2; txtPassword = new JPasswordField(); styleComponent(txtPassword);
+        txtPassword.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Vacío para mantener actual");
+        cardForm.add(txtPassword, gbc);
+        
+        gbc.gridx = 3; gbc.gridwidth = 1; chkVerPass = new JCheckBox("Ver");
+        chkVerPass.addActionListener(e -> txtPassword.setEchoChar(chkVerPass.isSelected() ? (char)0 : '•'));
+        cardForm.add(chkVerPass, gbc);
+
+        // --- 4. BOTONERA (ESTILO LIMPIO - TIPO MENÚ) ---
+        // Usamos GridLayout con espacio para que se vean como "Tarjetas" o botones grandes del menú
+        JPanel actionsPanel = new JPanel(new GridLayout(2, 4, 10, 10)); // 2 filas, 4 columnas
+        actionsPanel.setOpaque(false);
+        
+        // --- FILA 1: OPERACIONES ---
+        JButton btnGuardar = createMenuButton("Guardar / Nuevo");
+        JButton btnEditar = createMenuButton("Actualizar Datos");
+        btnEstado = createMenuButton("Desactivar"); // Cambia dinámicamente
+        JButton btnLimpiar = createMenuButton("Limpiar Campos");
+        
+        // --- FILA 2: EXTRAS Y SALIDA ---
+        JButton btnPdf = createMenuButton("Generar PDF");
+        JButton btnResetPass = createMenuButton("Resetear Clave");
+        
+        // BOTONES ROJOS (PELIGRO/SALIDA)
+        JButton btnEliminarDef = createRedButton("Eliminar Definitivo");
+        JButton btnLogout = createRedButton("Cerrar Sesión");
+
+        // Añadir en orden
+        actionsPanel.add(btnGuardar);
+        actionsPanel.add(btnEditar);
+        actionsPanel.add(btnEstado);
+        actionsPanel.add(btnLimpiar);
+        
+        actionsPanel.add(btnPdf);
+        actionsPanel.add(btnResetPass);
+        actionsPanel.add(btnEliminarDef); // Rojo
+        actionsPanel.add(btnLogout);      // Rojo
+
+        // Ensamblaje derecho
+        rightPanel.add(cardForm, BorderLayout.CENTER);
+        rightPanel.add(actionsPanel, BorderLayout.SOUTH);
+
+        // SPLIT
+        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scrollTabla, rightPanel);
+        split.setResizeWeight(0.45);
+        split.setDividerSize(5);
+        mainPanel.add(split, BorderLayout.CENTER);
+
+        setContentPane(mainPanel);
+
+        // --- LISTENERS ---
+        btnGuardar.addActionListener(e -> guardarUsuario());
         btnEditar.addActionListener(e -> editarUsuario());
-        btnEliminar.addActionListener(e -> eliminarUsuario());
-        btnRefrescar.addActionListener(e -> { limpiarFormulario(); cargarTabla(); });
-        btnImprimir.addActionListener(e -> generarReportePDF());
-        btnCerrar.addActionListener(e -> dispose());
+        btnEstado.addActionListener(e -> cambiarEstadoLogico());
+        btnEliminarDef.addActionListener(e -> eliminarFisico());
+        btnResetPass.addActionListener(e -> resetearContrasenaDefault());
+        btnLimpiar.addActionListener(e -> limpiarFormulario());
+        btnPdf.addActionListener(e -> generarPDF());
+        btnLogout.addActionListener(e -> {
+            if(JOptionPane.showConfirmDialog(this, "¿Cerrar sesión?", "Salir", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                this.dispose();
+                new LoginView().setVisible(true);
+            }
+        });
     }
+
+    // ================= DISEÑO DE BOTONES (ESTILO MENÚ) =================
     
-    // Método auxiliar para títulos bonitos en el form
-    private void addSeparator(JPanel panel, String text, int y) {
-        GridBagConstraints c = new GridBagConstraints();
-        c.gridx = 0; c.gridy = y; c.gridwidth = 2; c.fill = GridBagConstraints.HORIZONTAL;
-        c.insets = new Insets(10, 0, 5, 0);
-        JLabel lbl = new JLabel(text);
-        lbl.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lbl.setForeground(new Color(0, 102, 204));
-        lbl.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
-        panel.add(lbl, c);
+    // Botón BLANCO (Como los módulos del menú)
+    private JButton createMenuButton(String text) {
+        JButton b = new JButton(text);
+        b.setBackground(ANT_WHITE_BG);
+        b.setForeground(ANT_TEXT);
+        b.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        b.setFocusPainted(false);
+        // Borde gris suave y esquinas redondeadas
+        b.setBorder(BorderFactory.createLineBorder(ANT_BORDER, 1));
+        b.putClientProperty(FlatClientProperties.STYLE, "arc: 10; margin: 5,10,5,10");
+        
+        // Efecto hover simple (opcional, Swing lo maneja básico)
+        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return b;
     }
+
+    // Botón ROJO (Como cerrar sesión)
+    private JButton createRedButton(String text) {
+        JButton b = new JButton(text);
+        b.setBackground(ANT_RED);
+        b.setForeground(Color.WHITE);
+        b.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        b.setFocusPainted(false);
+        b.setBorderPainted(false); // Sin borde, todo color
+        b.putClientProperty(FlatClientProperties.STYLE, "arc: 10; margin: 5,10,5,10");
+        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return b;
+    }
+
+    private void styleComponent(JComponent c) {
+        c.putClientProperty(FlatClientProperties.STYLE, "arc: 8; padding: 5,5,5,5");
+        c.setPreferredSize(new Dimension(0, 30));
+    }
+
+    private JTextField createStyledField() {
+        JTextField t = new JTextField();
+        styleComponent(t);
+        return t;
+    }
+
+    private void addField(JPanel p, String label, JComponent comp, int x, int y, GridBagConstraints gbc, double weight) {
+        gbc.gridx = x; gbc.gridy = y; 
+        gbc.weightx = 0; gbc.gridwidth = 1;
+        p.add(new JLabel(label), gbc);
+        
+        gbc.gridx = x + 1; 
+        gbc.weightx = weight;
+        p.add(comp, gbc);
+    }
+
+    private void addSectionTitle(JPanel p, String title, int y, GridBagConstraints gbc) {
+        GridBagConstraints c = (GridBagConstraints) gbc.clone();
+        c.gridx = 0; c.gridy = y; c.gridwidth = 4;
+        c.insets = new Insets(15, 5, 5, 5);
+        JLabel l = new JLabel(title);
+        l.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        l.setForeground(new Color(0, 80, 160)); // Azul corporativo suave
+        l.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)));
+        p.add(l, c);
+    }
+
+    // ================= LÓGICA (IGUAL) =================
 
     private void cargarTabla() {
         modelo.setRowCount(0);
-        // 1. Guardamos la lista completa en memoria para poder usarla luego
-        listaUsuariosActual = controller.listarUsuarios();
-        
-        for (Usuario u : listaUsuariosActual) {
-            modelo.addRow(new Object[]{u.getId(), u.getUsername(), u.getRol()});
+        List<Usuario> lista = controller.listar(); 
+        for (Usuario u : lista) {
+            String nombreCompleto = u.getPrimerNombre() + " " + u.getPrimerApellido();
+            modelo.addRow(new Object[]{u.getId(), u.getCedula(), nombreCompleto, u.getRol(), u.isActivo() ? "ACTIVO" : "INACTIVO"});
         }
     }
 
-    private void cargarSeleccionEnFormulario() {
+    private void cargarFormularioDesdeTabla() {
         int row = tabla.getSelectedRow();
-        if (row < 0 || row >= listaUsuariosActual.size()) return;
+        if (row == -1) return;
+        int id = (int) modelo.getValueAt(row, 0);
+        usuarioSeleccionado = controller.listar().stream().filter(x -> x.getId() == id).findFirst().orElse(null);
+        if (usuarioSeleccionado == null) return;
 
-        // 2. Sacamos el objeto completo de la lista
-        Usuario u = listaUsuariosActual.get(row);
-
-        txtId.setText(String.valueOf(u.getId()));
-        txtUsername.setText(u.getUsername());
-        cboRol.setSelectedItem(u.getRol());
+        txtId.setText(String.valueOf(usuarioSeleccionado.getId()));
+        txtCedula.setText(usuarioSeleccionado.getCedula());
+        txtPrimerNombre.setText(usuarioSeleccionado.getPrimerNombre());
+        txtSegundoNombre.setText(usuarioSeleccionado.getSegundoNombre());
+        txtPrimerApellido.setText(usuarioSeleccionado.getPrimerApellido());
+        txtSegundoApellido.setText(usuarioSeleccionado.getSegundoApellido());
+        txtTelefono.setText(usuarioSeleccionado.getTelefono());
+        txtCorreo.setText(usuarioSeleccionado.getEmail());
+        cboRol.setSelectedItem(usuarioSeleccionado.getRol());
+        txtUsername.setText(usuarioSeleccionado.getUsername());
         
-        // Ahora sí se llenan los campos personales
-        txtNombre.setText(u.getNombre());
-        txtApellido.setText(u.getApellido());
-        txtTelefono.setText(u.getTelefono());
-        txtCorreo.setText(u.getEmail());
-        
-        txtPassword.setText(""); // Por seguridad, limpio
-    }
+        txtPassword.setText(usuarioSeleccionado.getPassword());
+        txtPassword.setEditable(false);
+        txtPassword.setBackground(new Color(245, 245, 245));
 
-    private void limpiarFormulario() {
-        txtId.setText("");
-        txtUsername.setText("");
-        txtPassword.setText("");
-        cboRol.setSelectedIndex(0);
-        txtNombre.setText("");
-        txtApellido.setText("");
-        txtTelefono.setText("");
-        txtCorreo.setText("");
-        tabla.clearSelection();
-    }
-
-    // --- LÓGICA DE GENERACIÓN AUTOMÁTICA ---
-    private void generarCredencialesSiVacio() {
-        String nombre = txtNombre.getText().trim();
-        String apellido = txtApellido.getText().trim();
-
-        // Solo generamos si hay nombre y apellido
-        if (!nombre.isEmpty() && !apellido.isEmpty()) {
-            
-            // Si el username está vacío, creamos uno: PrimeraLetraNombre + Apellido
-            if (txtUsername.getText().trim().isEmpty()) {
-                // Quitamos espacios del apellido por si acaso
-                String apellidoLimpio = apellido.split(" ")[0]; 
-                String autoUser = (nombre.charAt(0) + apellidoLimpio).toLowerCase();
-                txtUsername.setText(autoUser);
-            }
-
-            // Si el password está vacío, ponemos el default
-            String passActual = new String(txtPassword.getPassword());
-            if (passActual.isEmpty()) {
-                txtPassword.setText("Sist.1234!"); // Contraseña por defecto
-            }
+        if (usuarioSeleccionado.isActivo()) {
+            lblEstadoActual.setText("ACTIVO");
+            lblEstadoActual.setForeground(new Color(40, 167, 69));
+            btnEstado.setText("Desactivar");
+        } else {
+            lblEstadoActual.setText("INACTIVO");
+            lblEstadoActual.setForeground(ANT_RED);
+            btnEstado.setText("Activar");
         }
     }
 
-    private void crearUsuario() {
-        // 1. Validar campos personales primero
-        String nombre = txtNombre.getText().trim();
-        String apellido = txtApellido.getText().trim();
-        String telefono = txtTelefono.getText().trim();
-        String correo = txtCorreo.getText().trim();
-
-        if (nombre.isEmpty() || apellido.isEmpty() || telefono.isEmpty() || correo.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Nombre, Apellido, Teléfono y Correo son obligatorios.", "Validación", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        if (!correo.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
-            JOptionPane.showMessageDialog(this, "El correo no es válido.\nDebe tener el formato: usuario@dominio.com", "Validación de Correo", JOptionPane.WARNING_MESSAGE);
-            return; 
-        }
-        
-        // 2. Intentar autogenerar credenciales si están vacías
-        generarCredencialesSiVacio();
-
-        String username = txtUsername.getText().trim();
-        String password = new String(txtPassword.getPassword());
-        String rol = (String) cboRol.getSelectedItem();
-
-        // 3. Validar credenciales
-        if (username.isEmpty() || password.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "No se pudo generar Username/Password. Ingréselos manualmente.", "Validación", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-
+    private void guardarUsuario() {
+        if (txtCedula.getText().isEmpty()) return;
         try {
-            Usuario creado = controller.crearUsuario(username, password, rol, nombre, apellido, telefono, correo, this.usuarioLogueadoUsername);
-            if (creado != null) {
-                JOptionPane.showMessageDialog(this, "✅ Usuario creado con éxito.\nUsername: " + username + "\nPass: " + password, "Éxito", JOptionPane.INFORMATION_MESSAGE);
-                cargarTabla();
-                limpiarFormulario();
-            } else {
-                JOptionPane.showMessageDialog(this, "No se pudo crear el usuario.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            String pass = new String(txtPassword.getPassword());
+            controller.crear(txtCedula.getText(), txtPrimerNombre.getText(), txtSegundoNombre.getText(),
+                    txtPrimerApellido.getText(), txtSegundoApellido.getText(), txtTelefono.getText(),
+                    txtCorreo.getText(), pass, 
+                    (String)cboRol.getSelectedItem(), usuarioLogueadoUsername);
+            
+            JOptionPane.showMessageDialog(this, "Usuario creado exitosamente.");
+            cargarTabla();
+            limpiarFormulario();
+        } catch(Exception e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void editarUsuario() {
-        if (txtId.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Seleccione un usuario.", "Aviso", JOptionPane.WARNING_MESSAGE);
+        if (txtId.getText().isEmpty() || usuarioSeleccionado == null) {
+            JOptionPane.showMessageDialog(this, "Seleccione un usuario para editar.", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        
-        int id = Integer.parseInt(txtId.getText().trim());
-        String username = txtUsername.getText().trim();
-        String password = new String(txtPassword.getPassword());
-        String rol = (String) cboRol.getSelectedItem();
-        String nombre = txtNombre.getText().trim();
-        String apellido = txtApellido.getText().trim();
-        String telefono = txtTelefono.getText().trim();
-        String correo = txtCorreo.getText().trim();
-
-        if (password.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Para editar, ingrese la contraseña nueva o la actual.", "Seguridad", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
         try {
-            boolean ok = controller.actualizarUsuario(id, username, password, rol, nombre, apellido, telefono, correo);
-            if (ok) {
-                JOptionPane.showMessageDialog(this, "Usuario actualizado.");
-                cargarTabla();
-                limpiarFormulario();
-            } else {
-                JOptionPane.showMessageDialog(this, "Error al actualizar.");
-            }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
-        }
-    }
-
-    private void eliminarUsuario() {
-        if (txtId.getText().trim().isEmpty()) return;
-        int id = Integer.parseInt(txtId.getText());
-        
-        if (JOptionPane.showConfirmDialog(this, "¿Eliminar usuario ID " + id + "?", "Confirmar", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-            if (controller.eliminarUsuario(id)) {
-                JOptionPane.showMessageDialog(this, "Usuario Eliminado Exitosamente.");
+            Usuario u = new Usuario();
+            u.setId(Integer.parseInt(txtId.getText()));
+            u.setCedula(txtCedula.getText());
+            u.setPrimerNombre(txtPrimerNombre.getText());
+            u.setSegundoNombre(txtSegundoNombre.getText());
+            u.setPrimerApellido(txtPrimerApellido.getText());
+            u.setSegundoApellido(txtSegundoApellido.getText());
+            u.setTelefono(txtTelefono.getText());
+            u.setEmail(txtCorreo.getText());
+            u.setRol((String)cboRol.getSelectedItem());
+            u.setUsername(txtUsername.getText());
+            
+            u.setPassword(usuarioSeleccionado.getPassword()); 
+            
+            if(controller.actualizar(u)) {
+                JOptionPane.showMessageDialog(this, "Datos actualizados correctamente.");
                 cargarTabla();
                 limpiarFormulario();
             }
+        } catch(Exception e) {
+            JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
         }
     }
 
-    private void generarReportePDF() {
+    private void resetearContrasenaDefault() {
+        if (txtId.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Seleccione un usuario primero.");
+            return;
+        }
+        if (!validarAdmin("¿Desea resetear la contraseña a 'Sist.1234!'?")) return;
+
         try {
-            List<Usuario> listaCompleta = controller.listarUsuarios();
-            if (listaCompleta.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "No hay datos para imprimir.");
-                return;
+            int id = Integer.parseInt(txtId.getText());
+            if (controller.cambiarPassword(id, "Sist.1234!")) {
+                JOptionPane.showMessageDialog(this, "✅ Contraseña reseteada.");
+                limpiarFormulario();
             }
-
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setDialogTitle("Guardar Reporte");
-            fileChooser.setFileFilter(new FileNameExtensionFilter("PDF (*.pdf)", "pdf"));
-            fileChooser.setSelectedFile(new File("Reporte_Usuarios_" + System.currentTimeMillis() + ".pdf"));
-
-            if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-                File archivo = fileChooser.getSelectedFile();
-                String ruta = archivo.getAbsolutePath();
-                if (!ruta.endsWith(".pdf")) ruta += ".pdf";
-
-                ec.edu.sistemalicencias.util.GeneradorReporteUsuarios.generarPDF(listaCompleta, ruta);
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
         }
     }
     
-    // Bloque setupUI de IntelliJ (No tocar)
+    private void cambiarEstadoLogico() {
+        if (txtId.getText().isEmpty()) return;
+        int id = Integer.parseInt(txtId.getText());
+        boolean estaActivo = lblEstadoActual.getText().equals("ACTIVO");
+        
+        if (!validarAdmin("Confirme cambio de estado:")) return;
+
+        if (controller.cambiarEstado(id, !estaActivo)) {
+            JOptionPane.showMessageDialog(this, "Estado actualizado.");
+            cargarTabla();
+            limpiarFormulario();
+        }
+    }
+
+    private void eliminarFisico() {
+        if (txtId.getText().isEmpty()) return;
+        int id = Integer.parseInt(txtId.getText());
+
+        if (!validarAdmin("⚠ ADVERTENCIA: Borrado Definitivo.\nConfirme contraseña:")) return;
+
+        try {
+            if (controller.eliminarTotalmente(id)) {
+                JOptionPane.showMessageDialog(this, "Usuario eliminado.");
+                cargarTabla();
+                limpiarFormulario();
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
+        }
+    }
+
+    private boolean validarAdmin(String mensaje) {
+        JPanel p = new JPanel(new GridLayout(2, 1, 5, 5));
+        p.add(new JLabel(mensaje));
+        JPasswordField pf = new JPasswordField();
+        p.add(pf);
+        
+        int ok = JOptionPane.showConfirmDialog(this, p, "Seguridad", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+        
+        if (ok == JOptionPane.OK_OPTION) {
+            String pass = new String(pf.getPassword());
+            if (controller.login(usuarioLogueadoUsername, pass) != null) return true;
+            else JOptionPane.showMessageDialog(this, "Contraseña incorrecta.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        return false;
+    }
+
+    private void limpiarFormulario() {
+        txtId.setText(""); txtCedula.setText(""); txtPrimerNombre.setText(""); txtSegundoNombre.setText("");
+        txtPrimerApellido.setText(""); txtSegundoApellido.setText(""); txtTelefono.setText(""); txtCorreo.setText("");
+        txtUsername.setText(""); txtPassword.setText("");
+        txtPassword.setEditable(true);
+        txtPassword.setBackground(Color.WHITE);
+        lblEstadoActual.setText("---");
+        lblEstadoActual.setForeground(Color.BLACK);
+        btnEstado.setText("Desactivar");
+        usuarioSeleccionado = null; 
+        tabla.clearSelection();
+    }
+    
+    private void generarPDF() {
+        JFileChooser fc = new JFileChooser();
+        fc.setSelectedFile(new File("Reporte_Usuarios.pdf"));
+        if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            GeneradorReporteUsuarios.generar(controller.listar(), fc.getSelectedFile().getAbsolutePath());
+        }
+    }
+    
     private void $$$setupUI$$$() {}
 }

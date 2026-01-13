@@ -3,204 +3,176 @@ package ec.edu.sistemalicencias.dao;
 import ec.edu.sistemalicencias.config.DatabaseConfig;
 import ec.edu.sistemalicencias.model.Usuario;
 import ec.edu.sistemalicencias.model.exceptions.BaseDatosException;
+import org.mindrot.jbcrypt.BCrypt; // Necesario para encriptar al actualizar
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class UsuarioDAO {
 
-    public Usuario login(String username, String password) {
-        Usuario usuarioEncontrado = null;
-        String sql = "SELECT id, nombres, apellidos, telefono, email, username, password, rol " +
-                "FROM usuarios WHERE username = ? AND password = ?";
-
-        try (Connection conn = DatabaseConfig.getInstance().obtenerConexion();
-            PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setString(1, username);
-            stmt.setString(2, password);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    usuarioEncontrado = new Usuario();
-                    usuarioEncontrado.setId(rs.getInt("id"));
-                    usuarioEncontrado.setNombre(rs.getString("nombres"));
-                    usuarioEncontrado.setApellido(rs.getString("apellidos"));
-                    usuarioEncontrado.setTelefono(rs.getString("telefono"));
-                    usuarioEncontrado.setEmail(rs.getString("email"));
-                    usuarioEncontrado.setUsername(rs.getString("username"));
-                    usuarioEncontrado.setPassword(rs.getString("password"));
-                    usuarioEncontrado.setRol(rs.getString("rol"));
-                }
-            }
-
-        } catch (BaseDatosException e) {
-            throw new RuntimeException("Error en el login: " + e.getMessage(), e);
-        } catch (SQLException e) {
-            throw new RuntimeException("Error en el login: " + e.getMessage(), e);
-        }
-
-        return usuarioEncontrado;
-    }
-
-    public List<Usuario> findAll() {
+    // 1. LISTAR TODOS (Modificado: Quitamos 'WHERE activo = TRUE')
+    public List<Usuario> listarTodos() { // Antes se llamaba listarActivos
         List<Usuario> lista = new ArrayList<>();
-
-        // Selecciona columnas explícitas y mapea por nombre (evita orden incorrecto)
-        String sql = "SELECT id, nombres, apellidos, telefono, email, username, password, rol, creado_por " +
-                "FROM usuarios ORDER BY id";
-
+        // Traemos todos para que se vean en la tabla (activos e inactivos)
+        String sql = "SELECT * FROM usuarios ORDER BY id ASC"; 
+        
         try (Connection cn = DatabaseConfig.getInstance().obtenerConexion();
             PreparedStatement ps = cn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery()) {
-
             while (rs.next()) {
-                Usuario u = new Usuario();
-                u.setId(rs.getInt("id"));
-                u.setNombre(rs.getString("nombres"));
-                u.setApellido(rs.getString("apellidos"));
-                u.setTelefono(rs.getString("telefono"));
-                u.setEmail(rs.getString("email"));
-                u.setUsername(rs.getString("username"));
-                u.setPassword(rs.getString("password"));
-                u.setRol(rs.getString("rol"));
-                String creador = rs.getString("creado_por");
-                u.setCreadoPor(creador != null ? creador : "-");
-                lista.add(u);
+                lista.add(mapearUsuario(rs));
             }
-
-        } catch (BaseDatosException e) {
-            throw new RuntimeException("Error listando usuarios: " + e.getMessage(), e);
-        } catch (SQLException e) {
-            throw new RuntimeException("Error listando usuarios: " + e.getMessage(), e);
+        } catch (SQLException | BaseDatosException e) {
+            throw new RuntimeException("Error listando usuarios: " + e.getMessage());
         }
-
         return lista;
     }
 
-    public Usuario create(Usuario u) {
-        String sql = "INSERT INTO usuarios (username, password, rol, nombres, apellidos, telefono, email, creado_por) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
-
+    // 2. CREAR (4 nombres + cédula)
+    public boolean crear(Usuario u) {
+        String sql = "INSERT INTO usuarios (cedula, primer_nombre, segundo_nombre, primer_apellido, segundo_apellido, " +
+                    "telefono, email, username, password, rol, creado_por, activo) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
         try (Connection cn = DatabaseConfig.getInstance().obtenerConexion();
             PreparedStatement ps = cn.prepareStatement(sql)) {
-
-            ps.setString(1, u.getUsername());
-            ps.setString(2, u.getPassword());
-            ps.setString(3, u.getRol());
-            ps.setString(4, u.getNombre());
-            ps.setString(5, u.getApellido());
+            
+            ps.setString(1, u.getCedula());
+            ps.setString(2, u.getPrimerNombre());
+            ps.setString(3, u.getSegundoNombre());
+            ps.setString(4, u.getPrimerApellido());
+            ps.setString(5, u.getSegundoApellido());
             ps.setString(6, u.getTelefono());
             ps.setString(7, u.getEmail());
-            ps.setString(8, u.getCreadoPor());
+            ps.setString(8, u.getUsername());
+            ps.setString(9, u.getPassword()); // YA VIENE HASHEADA DEL CONTROLLER
+            ps.setString(10, u.getRol());
+            ps.setString(11, u.getCreadoPor());
+            ps.setBoolean(12, true);
 
-            try (ResultSet keys = ps.executeQuery()) {
-                if (keys.next()) {
-                    u.setId(keys.getInt(1));
-                    return u;
-                }
-            }
-
-            return null;
-
-        } catch (BaseDatosException e) {
-            throw new RuntimeException("Error creando usuario: " + e.getMessage(), e);
-        } catch (SQLException e) {
-            throw new RuntimeException("Error creando usuario: " + e.getMessage(), e);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException | BaseDatosException e) {
+            throw new RuntimeException("Error creando usuario: " + e.getMessage());
         }
     }
 
-    public boolean update(Usuario u) {
-        String sql = "UPDATE usuarios SET username = ?, password = ?, rol = ?, nombres = ?, apellidos = ?, telefono = ?, email = ? " +
-                "WHERE id = ?";
-
+    // 3. ACTUALIZAR
+    public boolean actualizar(Usuario u) {
+        String sql = "UPDATE usuarios SET cedula=?, primer_nombre=?, segundo_nombre=?, primer_apellido=?, segundo_apellido=?, " +
+                    "telefono=?, email=?, rol=? WHERE id=?";
         try (Connection cn = DatabaseConfig.getInstance().obtenerConexion();
             PreparedStatement ps = cn.prepareStatement(sql)) {
-
-            ps.setString(1, u.getUsername());
-            ps.setString(2, u.getPassword());
-            ps.setString(3, u.getRol());
-            ps.setString(4, u.getNombre());
-            ps.setString(5, u.getApellido());
+            
+            ps.setString(1, u.getCedula());
+            ps.setString(2, u.getPrimerNombre());
+            ps.setString(3, u.getSegundoNombre());
+            ps.setString(4, u.getPrimerApellido());
+            ps.setString(5, u.getSegundoApellido());
             ps.setString(6, u.getTelefono());
             ps.setString(7, u.getEmail());
-            ps.setInt(8, u.getId());
+            ps.setString(8, u.getRol());
+            ps.setInt(9, u.getId());
 
             return ps.executeUpdate() > 0;
-
-        } catch (BaseDatosException e) {
-            throw new RuntimeException("Error actualizando usuario: " + e.getMessage(), e);
-        } catch (SQLException e) {
-            throw new RuntimeException("Error actualizando usuario: " + e.getMessage(), e);
+        } catch (SQLException | BaseDatosException e) {
+            throw new RuntimeException("Error actualizando: " + e.getMessage());
         }
     }
 
-    public boolean delete(int id) {
-        String sql = "DELETE FROM usuarios WHERE id = ?";
-
+    // 4. SOFT DELETE (Cambiar estado)
+    public boolean cambiarEstado(int id, boolean activo) {
+        String sql = "UPDATE usuarios SET activo = ? WHERE id = ?";
         try (Connection cn = DatabaseConfig.getInstance().obtenerConexion();
             PreparedStatement ps = cn.prepareStatement(sql)) {
-
-            ps.setInt(1, id);
-            return ps.executeUpdate() > 0;
-
-        } catch (BaseDatosException e) {
-            throw new RuntimeException("Error eliminando usuario: " + e.getMessage(), e);
-        } catch (SQLException e) {
-            throw new RuntimeException("Error eliminando usuario: " + e.getMessage(), e);
-        }
-    }
-
-    public boolean actualizarPassword(int id, String nuevaPassword) {
-        String sql = "UPDATE usuarios SET password = ? WHERE id = ?";
-
-        try (Connection cn = DatabaseConfig.getInstance().obtenerConexion();
-            PreparedStatement ps = cn.prepareStatement(sql)) {
-
-            ps.setString(1, nuevaPassword);
+            ps.setBoolean(1, activo);
             ps.setInt(2, id);
-
             return ps.executeUpdate() > 0;
-
-        } catch (BaseDatosException e) {
-            throw new RuntimeException("Error cambiando password: " + e.getMessage(), e);
-        } catch (SQLException e) {
-            throw new RuntimeException("Error cambiando password: " + e.getMessage(), e);
+        } catch (SQLException | BaseDatosException e) {
+            throw new RuntimeException("Error cambiando estado: " + e.getMessage());
         }
     }
 
-    // Método para verificar duplicados
-    public String verificarDuplicados(String username, String email, String telefono) {
-        String sql = "SELECT username, email, telefono FROM usuarios WHERE username = ? OR email = ? OR telefono = ?";
+    // 5. LOGIN
+    public Usuario buscarPorUsername(String username) {
+        String sql = "SELECT * FROM usuarios WHERE username = ?"; // <-- CAMBIO AQUÍ
         
         try (Connection cn = DatabaseConfig.getInstance().obtenerConexion();
             PreparedStatement ps = cn.prepareStatement(sql)) {
             ps.setString(1, username);
-            ps.setString(2, email);
-            ps.setString(3, telefono);
-            
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    String dbUser = rs.getString("username");
-                    String dbEmail = rs.getString("email");
-                    String dbTelf = rs.getString("telefono");
-
-                    if (dbUser.equalsIgnoreCase(username)) return "El Usuario '" + username + "' ya existe.";
-                    if (dbEmail.equalsIgnoreCase(email)) return "El Correo '" + email + "' ya está registrado.";
-                    if (dbTelf.equals(telefono)) return "El Teléfono '" + telefono + "' ya está registrado.";
-                }
+                if (rs.next()) return mapearUsuario(rs);
             }
-        } catch (Exception e) {
+        } catch (SQLException | BaseDatosException e) {
             e.printStackTrace();
         }
-        return null; 
+        return null;
+    }
+
+    // 6. VALIDAR DUPLICADOS
+    public String verificarDuplicados(String cedula, String username, String email) {
+        String sql = "SELECT cedula, username, email FROM usuarios WHERE cedula=? OR username=? OR email=?";
+        try (Connection cn = DatabaseConfig.getInstance().obtenerConexion();
+            PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setString(1, cedula);
+            ps.setString(2, username);
+            ps.setString(3, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    if (cedula.equals(rs.getString("cedula"))) return "Cédula ya registrada.";
+                    if (username.equals(rs.getString("username"))) return "Username ocupado.";
+                    if (email.equals(rs.getString("email"))) return "Email ya registrado.";
+                }
+            }
+        } catch (SQLException | BaseDatosException e) { e.printStackTrace(); }
+        return null;
+    }
+
+    // 7. ACTUALIZAR PASSWORD (ESTE ES EL QUE FALTABA)
+    public boolean actualizarPassword(int id, String nuevaPassword) {
+        // ¡IMPORTANTE! Como es la versión PRO, debemos encriptar aquí también.
+        // La vista manda texto plano, nosotros lo convertimos a Hash BCrypt.
+        String hash = BCrypt.hashpw(nuevaPassword, BCrypt.gensalt());
+
+        String sql = "UPDATE usuarios SET password = ? WHERE id = ?";
+        try (Connection cn = DatabaseConfig.getInstance().obtenerConexion();
+            PreparedStatement ps = cn.prepareStatement(sql)) {
+            
+            ps.setString(1, hash); // Guardamos el hash, no el texto plano
+            ps.setInt(2, id);
+            
+            return ps.executeUpdate() > 0;
+        } catch (SQLException | BaseDatosException e) {
+            throw new RuntimeException("Error actualizando password: " + e.getMessage());
+        }
+    }
+
+    private Usuario mapearUsuario(ResultSet rs) throws SQLException {
+        Usuario u = new Usuario();
+        u.setId(rs.getInt("id"));
+        u.setCedula(rs.getString("cedula"));
+        u.setPrimerNombre(rs.getString("primer_nombre"));
+        u.setSegundoNombre(rs.getString("segundo_nombre"));
+        u.setPrimerApellido(rs.getString("primer_apellido"));
+        u.setSegundoApellido(rs.getString("segundo_apellido"));
+        u.setTelefono(rs.getString("telefono"));
+        u.setEmail(rs.getString("email"));
+        u.setUsername(rs.getString("username"));
+        u.setPassword(rs.getString("password"));
+        u.setRol(rs.getString("rol"));
+        u.setCreadoPor(rs.getString("creado_por"));
+        u.setActivo(rs.getBoolean("activo"));
+        u.setFechaRegistro(rs.getTimestamp("fecha_registro"));
+        return u;
+    }
+
+    public boolean eliminarFisico(int id) {
+        String sql = "DELETE FROM usuarios WHERE id = ?";
+        try (Connection cn = DatabaseConfig.getInstance().obtenerConexion();
+            PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException | BaseDatosException e) {
+            // Error común: Llave foránea (si el usuario ya creó licencias, la BD no dejará borrarlo)
+            throw new RuntimeException("No se puede eliminar: El usuario tiene registros asociados.");
+        }
     }
 }
-
-

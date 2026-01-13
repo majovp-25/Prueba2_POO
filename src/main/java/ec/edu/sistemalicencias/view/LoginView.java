@@ -1,23 +1,32 @@
 package ec.edu.sistemalicencias.view;
 
-import com.intellij.uiDesigner.core.GridLayoutManager;
+import ec.edu.sistemalicencias.controller.UsuarioController;
+import ec.edu.sistemalicencias.dao.UsuarioDAO;
+import ec.edu.sistemalicencias.model.Usuario;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
 public class LoginView extends JFrame {
 
+    private final UsuarioController controller;
+
+    // Componentes Visuales
     private final JTextField txtUsername = new JTextField(18);
     private final JPasswordField txtPassword = new JPasswordField(18);
     private final JButton btnIngresar = new JButton("Ingresar");
     private final JButton btnSalir = new JButton("Salir");
+    private final JCheckBox chkVer = new JCheckBox("Ver");
 
     public LoginView() {
+        controller = new UsuarioController(); 
         setTitle("Login - Sistema Licencias");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
-
         initUI();
+        pack(); 
+        setLocationRelativeTo(null); 
     }
 
     private void initUI() {
@@ -30,7 +39,6 @@ public class LoginView extends JFrame {
         JLabel lblTitulo = new JLabel("Inicio de sesión");
         lblTitulo.setFont(lblTitulo.getFont().deriveFont(Font.BOLD, 18f));
 
-        // Estilos y Colores
         Color bg = new Color(245, 247, 250);
         Color cardBorder = new Color(225, 230, 236);
         Color inputBorder = new Color(210, 216, 224);
@@ -76,13 +84,18 @@ public class LoginView extends JFrame {
         btnSalir.setFocusPainted(false);
         btnSalir.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnSalir.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        
+        chkVer.setBackground(bg);
+        chkVer.setForeground(text);
+        chkVer.setFocusPainted(false);
+        chkVer.setFont(new Font("Segoe UI", Font.PLAIN, 11));
 
         txtUsername.setPreferredSize(new Dimension(260, 34));
         txtPassword.setPreferredSize(new Dimension(260, 34));
         btnIngresar.setPreferredSize(new Dimension(110, 34));
         btnSalir.setPreferredSize(new Dimension(90, 34));
 
-        c.gridx = 0; c.gridy = 0; c.gridwidth = 2;
+        c.gridx = 0; c.gridy = 0; c.gridwidth = 3; 
         panel.add(lblTitulo, c);
 
         c.gridwidth = 1; c.gridx = 0; c.gridy = 1;
@@ -90,9 +103,10 @@ public class LoginView extends JFrame {
         lblUser.setForeground(text);
         panel.add(lblUser, c);
 
-        c.gridx = 1; c.gridy = 1;
+        c.gridx = 1; c.gridy = 1; c.gridwidth = 2;
         panel.add(txtUsername, c);
 
+        c.gridwidth = 1;
         c.gridx = 0; c.gridy = 2;
         JLabel lblPass = new JLabel("Contraseña:");
         lblPass.setForeground(text);
@@ -100,58 +114,96 @@ public class LoginView extends JFrame {
 
         c.gridx = 1; c.gridy = 2;
         panel.add(txtPassword, c);
+        
+        c.gridx = 2; c.gridy = 2; 
+        c.weightx = 0; 
+        panel.add(chkVer, c);
 
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         panelBotones.add(btnSalir);
         panelBotones.add(btnIngresar);
         panelBotones.setOpaque(false);
 
-        c.gridx = 0; c.gridy = 3; c.gridwidth = 2;
+        c.gridx = 0; c.gridy = 3; c.gridwidth = 3;
         c.anchor = GridBagConstraints.EAST;
         c.fill = GridBagConstraints.NONE;
         panel.add(panelBotones, c);
 
-        // Evento Salir
+        chkVer.addActionListener(e -> {
+            if (chkVer.isSelected()) {
+                txtPassword.setEchoChar((char) 0);
+            } else {
+                txtPassword.setEchoChar('•');
+            }
+        });
+
         btnSalir.addActionListener(e -> {
             if (JOptionPane.showConfirmDialog(this, "¿Desea salir?", "Salir", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                 System.exit(0);
             }
         });
+        
+        btnIngresar.addActionListener(e -> login());
 
         setContentPane(panel);
         getRootPane().setDefaultButton(btnIngresar);
-        pack();
-        setLocationRelativeTo(null);
     }
 
-    public String getUsername() { return txtUsername.getText().trim(); }
-    public String getPassword() { return new String(txtPassword.getPassword()); }
-    public void addIngresarListener(ActionListener listener) { btnIngresar.addActionListener(listener); }
-    public void showError(String msg) { JOptionPane.showMessageDialog(this, msg, "Error", JOptionPane.ERROR_MESSAGE); }
-    public void clearFields() {
-        txtUsername.setText("");
-        txtPassword.setText("");
-        txtUsername.requestFocus();
-    }
+    private void login() {
+        String u = txtUsername.getText().trim();
+        String p = new String(txtPassword.getPassword());
 
-    // --- NUEVO METODO PARA PEDIR CAMBIO DE CONTRASEÑA ---
-    public String solicitarNuevaContrasena() {
-        JPanel panel = new JPanel(new GridLayout(2, 1));
-        panel.add(new JLabel("⚠ Es su primer ingreso (o usa clave por defecto)."));
-        panel.add(new JLabel("Por seguridad, ingrese una nueva contraseña:"));
-        
-        JPasswordField pf = new JPasswordField();
-        int ok = JOptionPane.showConfirmDialog(this, new Object[]{panel, pf}, "Cambio de Contraseña Obligatorio", JOptionPane.OK_CANCEL_OPTION);
-        
-        if (ok == JOptionPane.OK_OPTION) {
-            return new String(pf.getPassword());
+        if (u.isEmpty() || p.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Ingrese sus credenciales.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
         }
-        return null; // Canceló
-    }
 
-    private void $$$setupUI$$$() {
-        final JPanel panel1 = new JPanel();
-        panel1.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        try {
+            Usuario usuario = controller.login(u, p);
+
+            if (usuario != null) {
+                // A. VALIDACIÓN DE SEGURIDAD (Cambio de clave obligatorio)
+                if (p.equals("Sist.1234!")) {
+                    JOptionPane.showMessageDialog(this, "⚠️ Por seguridad, debe cambiar su contraseña inicial.", "Cambio Requerido", JOptionPane.WARNING_MESSAGE);
+                    String nuevaPass = JOptionPane.showInputDialog(this, "Ingrese su NUEVA contraseña:");
+
+                    if (nuevaPass != null && !nuevaPass.trim().isEmpty()) {
+                        if (nuevaPass.equals("Sist.1234!")) {
+                            JOptionPane.showMessageDialog(this, "No puede usar la misma contraseña por defecto.");
+                            return;
+                        }
+                        new UsuarioDAO().actualizarPassword(usuario.getId(), nuevaPass.trim());
+                        JOptionPane.showMessageDialog(this, "✅ Contraseña actualizada. Ingrese nuevamente.");
+                        txtPassword.setText("");
+                        return; 
+                    } else {
+                        return; 
+                    }
+                }
+
+                // B. REDIRECCIÓN SEGÚN ROL
+                this.dispose(); 
+
+                if (usuario.getRol().equalsIgnoreCase("Administrador")) {
+                    new GestionUsuariosView(usuario.getUsername()).setVisible(true);
+                } else if (usuario.getRol().equalsIgnoreCase("Analista")) {
+                    new MainView(usuario).setVisible(true);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Rol no reconocido: " + usuario.getRol());
+                }
+
+            } else {
+                // Si retorna null es credencial incorrecta
+                JOptionPane.showMessageDialog(this, "Usuario o contraseña incorrectos.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+            
+        } catch (RuntimeException re) {
+            // AQUÍ CAPTURAMOS TU MENSAJE PERSONALIZADO "Usuario Inactivo"
+            JOptionPane.showMessageDialog(this, re.getMessage(), "Acceso Denegado", JOptionPane.ERROR_MESSAGE);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error del sistema: " + e.getMessage());
+        }
     }
-    { $$$setupUI$$$(); }
 }
